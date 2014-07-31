@@ -49,6 +49,10 @@ def unzip(zipped):
     return it.izip(*zipped)
 
 
+##############################
+## ----- Main Classes ----- ##
+##############################
+
 class DiscreteRandomVariable(object):
     """ A ``DiscreteRandomVariable`` is a wrapper for a integer-valued discrete
     random variable. """
@@ -323,6 +327,22 @@ class DiscreteRandomVariable(object):
         return self.arith(other, max, "({x.name})|({y.name})")
 
 
+class RandomVariablePool(object):
+    """ A "pool" is an array of discrete random variables, which may be rolled
+    simultaneously to retrieve an array of results. """
+    def __init__(self, *drvs):
+        self.drvs = np.array(drvs)
+
+    def sum(self, name=None):
+        """ Return the random variable of the sum of the pool. """
+        _sum = self.drvs[0]
+        for drv in self.drvs[1:]:
+            _sum = _sum + drv
+        if name:
+            _sum.name = name
+        return _sum
+
+
 ##################################
 ## ----- Random Variables ----- ##
 ##################################
@@ -336,28 +356,15 @@ def constant(n):
 ## ----- Dice ----- ##
 ######################
 
-_ndk_cache = {}
-
 
 def ndk(n, k):
     """ Return the random variable representing rolling *n* *k*-sided dice. """
-    try:
-        return _ndk_cache[n, k]
-    except KeyError:
-        pass
-
-    name = "{}d{}".format(n, k)
+    name = "{n}d{k}".format(n=n, k=k)
+    die = DiscreteRandomVariable(name, rv=ss.randint(1, k + 1))
     if n == 1:
-        drv = DiscreteRandomVariable(name, rv=ss.randint(1, k + 1))
-        _ndk_cache[n, k] = drv
-        return drv
+        return die
 
-    right = n // 2
-    left = n - right
-    drv = ndk(left, k) + ndk(right, k)
-    drv.name = name
-    _ndk_cache[n, k] = drv
-    return drv
+    return RandomVariablePool(*(die for _ in xrange(n))).sum(name=name)
 
 
 _pool_cache = {}
