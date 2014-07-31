@@ -29,6 +29,15 @@ import operator as op
 ## ----- Helper Functions ----- ##
 ##################################
 
+def summate(*args):
+    """ Return the sum of *args*; at least one argument should be given, and
+    no "initial value" is assumed. """
+    try:
+        return reduce(op.add, args)
+    except TypeError:
+        raise ValueError("At least one argument should be given.")
+
+
 def unzip(zipped):
     """ Return a :term:`generator` reverses the work of zip/izip.
 
@@ -273,14 +282,22 @@ class DiscreteRandomVariable(object):
 
     ## ----- Arithmetic ----- ##
 
-    def arith(self, other, operator, name):
+    def unop(self, operator, name):
+        """ Return a new discrete random variable, which is the result of
+        *operator* on *self*. """
+        pool = RandomVariablePool(self)
+        return pool.operate(operator, name=name)
+
+    def binop(self, other, operator, name):
         """ Return a new discrete random variable, which is the result of
         *operator* on *self* and *other*. *other* may be an integer, in which
-        case we treat it as a constant random variable. Allowed operators are
-        *add*, *sub*, *mul*, *max*, and *min*. """
+        case we treat it as a constant random variable. """
         ## Turn the integer into a constant random variable
         if isinstance(other, int):
             other = constant(other)
+
+        pool = RandomVariablePool(self, other)
+        return pool.operate(operator, name=name)
 
         d = col.defaultdict(float)
 
@@ -297,34 +314,35 @@ class DiscreteRandomVariable(object):
         return DiscreteRandomVariable(new_name, xs=new_xs, ps=new_ps)
 
     def __add__(self, other):
-        return self.arith(other, op.add, "({x.name})+({y.name})")
+        return self.binop(other, op.add, "({_0.name})+({_1.name})")
 
     def __and__(self, other):
-        return self.arith(other, min, "({x.name})&({y.name})")
+        return self.binop(other, min, "({_0.name})&({_1.name})")
 
     def __ge__(self, other):
-        return self.arith(other, op.ge, "({x.name})>=({y.name})")
+        return self.binop(other, op.ge, "({_0.name})>=({_1.name})")
 
     def __gt__(self, other):
-        return self.arith(other, op.gt, "({x.name})>({y.name})")
+        return self.binop(other, op.gt, "({_0.name})>({_1.name})")
 
     def __le__(self, other):
-        return self.arith(other, op.le, "({x.name})<=({y.name})")
+        return self.binop(other, op.le, "({_0.name})<=({_1.name})")
 
     def __lt__(self, other):
-        return self.arith(other, op.lt, "({x.name})<({y.name})")
+        return self.binop(other, op.lt, "({_0.name})<({_1.name})")
 
     def __mul__(self, other):
-        return self.arith(other, op.add, "{x.name})*({y.name})")
+        return self.binop(other, op.add, "{_0.name})*({_1.name})")
 
     def __neg__(self):
+        return self.unop(op.neg, "-({_0.name})")
         new_name = "-({})".format(self.name)
         new_xs = -self._rv.xk
         new_ps = self._rv.pk
         return DiscreteRandomVariable(new_name, xs=new_xs, ps=new_ps)
 
     def __or__(self, other):
-        return self.arith(other, max, "({x.name})|({y.name})")
+        return self.binop(other, max, "({_0.name})|({_1.name})")
 
 
 class RandomVariablePool(object):
@@ -333,14 +351,28 @@ class RandomVariablePool(object):
     def __init__(self, *drvs):
         self.drvs = np.array(drvs)
 
-    def sum(self, name=None):
+    def operate(self, operator, name):
+        d = col.defaultdict(float)
+
+        for xp in it.product(*(drv.values for drv in self.drvs)):
+            xs, ps = unzip(xp)
+            val = operator(*xs)
+            ival = int(val)
+            if not val == ival:
+                raise ValueError("Operator must return integer values.")
+            d[ival] += reduce(op.mul, ps)
+
+        formatter = dict(("_{i}".format(i=i), drv) for i, drv in
+                         enumerate(self.drvs))
+        _name = name.format(**formatter)
+
+        _xs = d.keys()
+        _ps = d.values()
+        return DiscreteRandomVariable(_name, xs=_xs, ps=_ps)
+
+    def sum(self, name):
         """ Return the random variable of the sum of the pool. """
-        _sum = self.drvs[0]
-        for drv in self.drvs[1:]:
-            _sum = _sum + drv
-        if name:
-            _sum.name = name
-        return _sum
+        return self.operate(summate, name)
 
 
 ##################################
