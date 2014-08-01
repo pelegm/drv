@@ -19,6 +19,7 @@ inf = np.inf
 import collections as col
 
 ## Python basics
+import functools as fn
 import itertools as it
 
 ## For arithmetic
@@ -28,15 +29,6 @@ import operator as op
 ##################################
 ## ----- Helper Functions ----- ##
 ##################################
-
-def summate(*args):
-    """ Return the sum of *args*; at least one argument should be given, and
-    no "initial value" is assumed. """
-    try:
-        return reduce(op.add, args)
-    except TypeError:
-        raise ValueError("At least one argument should be given.")
-
 
 def unzip(zipped):
     """ Return a :term:`generator` reverses the work of zip/izip.
@@ -56,6 +48,22 @@ def unzip(zipped):
         a result of how :func:`zip` works.
     """
     return it.izip(*zipped)
+
+
+###########################
+## ----- Operators ----- ##
+###########################
+
+def fetch_and_do(args, n, operator, cmp=None, key=None, reverse=False):
+    """ Sort args with the given sorting arguments, take the first *n*, and
+    return the result of *operator* on these. """
+    return operator(sorted(args, cmp=cmp, key=key, reverse=reverse)[:n])
+
+
+median = lambda a: int(np.median(a))
+summate = fn.partial(reduce, op.add)
+sum_nlargest = fn.partial(fetch_and_do, operator=summate, reverse=True)
+sum_nsmallest = fn.partial(fetch_and_do, operator=summate, reverse=False)
 
 
 ##############################
@@ -349,14 +357,18 @@ class RandomVariablePool(object):
     """ A "pool" is an array of discrete random variables, which may be rolled
     simultaneously to retrieve an array of results. """
     def __init__(self, *drvs):
-        self.drvs = np.array(drvs)
+        self.drvs = drvs
+
+    def __len__(self):
+        return len(self.drvs)
 
     def operate(self, operator, name):
         d = col.defaultdict(float)
 
+        print self.drvs
         for xp in it.product(*(drv.values for drv in self.drvs)):
             xs, ps = unzip(xp)
-            val = operator(*xs)
+            val = operator(xs)
             ival = int(val)
             if not val == ival:
                 raise ValueError("Operator must return integer values.")
@@ -369,6 +381,27 @@ class RandomVariablePool(object):
         _xs = d.keys()
         _ps = d.values()
         return DiscreteRandomVariable(_name, xs=_xs, ps=_ps)
+
+    def max(self, name):
+        """ Return the random variable of the maximum of the outcomes. """
+        return self.operate(max, name)
+
+    def median(self, name):
+        """ Return the median of the outcomes; this works only if the number of
+        rolls is even. """
+        if not len(self) % 2:
+            raise ValueError("Can only do medians of odd dice pools.")
+        return self.operate(median, name)
+
+    def nlargest(self, name, n):
+        """ Return the random variable of the sum of the *n* largest outcomes.
+        """
+        return self.operate(fn.partial(sum_nlargest, n=n), name)
+
+    def nsmallest(self, name, n):
+        """ Return the random variable of the sum of the *n* smallest outcomes.
+        """
+        return self.operate(fn.partial(sum_nsmallest, n=n), name)
 
     def sum(self, name):
         """ Return the random variable of the sum of the pool. """
