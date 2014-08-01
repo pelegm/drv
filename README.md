@@ -2,6 +2,10 @@
 
 Dice random variables in Python made easy.
 
+## Table of Contents
+
+* [Documentation](#documentation)
+* [Installation](#installation)
 
 ## Documentation
 
@@ -25,8 +29,7 @@ the package uses Python standard libraries only.
 
 ## License
 
-Please see LICENSE.
-
+Please refer to [LICENSE](LICENSE).
 
 ## Usage
 
@@ -39,5 +42,6 @@ but see *examples*.
 
 ### Examples
 
-To plot the ...
+Suppose I wish to plot the probability mass function of the common `3d6`
+combination (which is the sum of three 6-sided dice).
 
