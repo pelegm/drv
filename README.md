@@ -1,4 +1,4 @@
-# dice-rv
+# dicerv
 
 Dice random variables in Python made easy.
 
