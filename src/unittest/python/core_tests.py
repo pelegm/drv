@@ -7,6 +7,7 @@ import unittest
 
 ## Testing tools
 import numpy as np
+import utils
 
 ## Testing target
 import drv.core
@@ -43,11 +44,7 @@ class DiscreteRandomVariableTest(object):
 class DiscreteRandomVariableConstantTest(unittest.TestCase,
                                          DiscreteRandomVariableTest):
     attrs = {
-        'name': None,
         'max': 17,
-        'mean': None,
-        'median': None,
-        'min': None,
         'std': 0,
         'variance': 0,
     }
@@ -67,11 +64,7 @@ class DiscreteRandomVariableRandintTest(unittest.TestCase,
     attrs = {
         'name': 'test_randint',
         'max': 100,
-        'mean': None,
-        'median': None,
         'min': -50,
-        'std': None,
-        'variance': None,
     }
 
     def setUp(self):
@@ -85,21 +78,8 @@ class DiscreteRandomVariableRandintTest(unittest.TestCase,
         self.drv = drv.core.DiscreteRandomVariable('test_randint', rv=self.rv)
 
 
-def test_gen(key):
-    def test(self, key=key):
-        expected = self.attrs[key]
-        actual = getattr(self.drv, key)
-        msg = "{} test has failed; expected {}, got {}".format(key, expected,
-                                                               actual)
-        if isinstance(expected, str):
-            self.assertEqual(expected, actual, msg=msg)
-        else:
-            self.assertAlmostEqual(expected, actual, msg=msg)
-    return test
-
-
 for key in DiscreteRandomVariableTest.attrs:
-    test = test_gen(key)
+    test = utils.test_gen(key)
     test_name = "test_{}".format(key)
     setattr(DiscreteRandomVariableTest, test_name, test)
 
