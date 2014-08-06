@@ -491,33 +491,3 @@ def constant(n):
     """ Return the constant random variable *n*. """
     return DiscreteRandomVariable(name=str(n), xs=[n], ps=[1.0])
 
-
-######################
-## ----- Dice ----- ##
-######################
-
-_pool_cache = {}
-
-
-def pool(n, k, tn):
-    """ Return the random variable counting the number of "successes" of *n*
-    rolls of *k*-sided dice, against a target number *tn*. """
-    try:
-        return _pool_cache[n, k, tn]
-    except KeyError:
-        pass
-
-    name = "{}p{}>={}".format(n, k, tn)
-    if n == 1:
-        drv = ndk(1, k) >= tn
-        drv.name = name
-        _pool_cache[n, k, tn] = drv
-        return drv
-
-    right = n // 2
-    left = n - right
-    drv = pool(left, k, tn) + pool(right, k, tn)
-    drv.name = name
-    _pool_cache[n, k, tn] = drv
-    return drv
-
