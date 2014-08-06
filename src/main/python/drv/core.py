@@ -141,6 +141,13 @@ mul_op = ReduceOperator(np.prod, 1)
 max_op = ReduceOperator(max)
 min_op = ReduceOperator(min)
 
+## Comparison
+ge_op = IndexedOperator(op.ge, [0, 1], unpack=True)
+gt_op = IndexedOperator(op.gt, [0, 1], unpack=True)
+le_op = IndexedOperator(op.le, [0, 1], unpack=True)
+lt_op = IndexedOperator(op.lt, [0, 1], unpack=True)
+
+
 ##############################
 ## ----- Main Classes ----- ##
 ##############################
@@ -403,16 +410,16 @@ class DiscreteRandomVariable(object):
         return self.binop(other, min_op, "({_0.name})&({_1.name})")
 
     def __ge__(self, other):
-        return self.binop(other, op.ge, "({_0.name})>=({_1.name})")
+        return self.binop(other, ge_op, "({_0.name})>=({_1.name})")
 
     def __gt__(self, other):
-        return self.binop(other, op.gt, "({_0.name})>({_1.name})")
+        return self.binop(other, gt_op, "({_0.name})>({_1.name})")
 
     def __le__(self, other):
-        return self.binop(other, op.le, "({_0.name})<=({_1.name})")
+        return self.binop(other, le_op, "({_0.name})<=({_1.name})")
 
     def __lt__(self, other):
-        return self.binop(other, op.lt, "({_0.name})<({_1.name})")
+        return self.binop(other, lt_op, "({_0.name})<({_1.name})")
 
     def __mul__(self, other):
         return self.binop(other, mul_op, "{_0.name})*({_1.name})")
