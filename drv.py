@@ -50,21 +50,94 @@ def unzip(zipped):
     return it.izip(*zipped)
 
 
+##################################
+## ----- Operator Classes ----- ##
+##################################
+
+class Operator(object):
+    """ An :class:`Operator` is a class which acts efficiently on a pool of
+    random variables, returning a random variable. """
+    def __init__(self, operator, unpack=False):
+        if not unpack:
+            self.operator = operator
+        else:
+            self.operator = lambda x: operator(*x)
+
+    def __call__(self, pool, name):
+        return self._operate(pool, name)
+
+    def _operate(self, pool, name):
+        """ This method is intended to be overwritten by subclasses, for more
+        efficient calculations. If not overwritten, a naive calculation is
+        being executed, which may take exponential time. """
+        d = col.defaultdict(float)
+
+        for xp in it.product(*(drv.values for drv in pool.drvs)):
+            xs, ps = unzip(xp)
+            val = self.operator(xs)
+            ival = int(val)
+            if not val == ival:
+                raise ValueError("Operator must return integer values.")
+            d[ival] += reduce(op.mul, ps)
+
+        formatter = dict(("_{i}".format(i=i), drv) for i, drv in
+                         enumerate(pool.drvs))
+        _name = name.format(**formatter)
+
+        _xs = d.keys()
+        _ps = d.values()
+        return DiscreteRandomVariable(_name, xs=_xs, ps=_ps)
+
+
+class ReduceOperator(Operator):
+    """ This is a class of operators which may be reduced to simple memoryless
+    binary operators. """
+    def __init__(self, operator, identity=None, unpack=False):
+        super(ReduceOperator, self).__init__(operator, unpack=unpack)
+        self.identity = identity
+
+    def _operate(self, pool, name):
+        if not pool:
+            if self.identity:
+                return constant(self.identity)
+            raise ValueError
+
+        drvs = pool.drvs
+        res = drvs[0]
+        for rv in drvs[1:]:
+            _pool = RandomVariablePool(res, rv)
+            res = super(ReduceOperator, self)._operate(_pool, name)
+
+        return res
+
+
+class IndexedOperator(Operator):
+    """ This is a class of operators which work only on a pre-defined set of
+    indices of random variables from the pool. """
+    def __init__(self, operator, indices, unpack=False):
+        super(IndexedOperator, self).__init__(operator, unpack=unpack)
+        self.indices = indices
+
+    def _operator(self, pool):
+        drvs = pool.drvs
+        _drvs = [drvs[i] for i in self.indices]
+        _pool = drv.RandomVariablePool(*_drvs)
+        return super(IndexedOperator, self)._operate(_pool, name)
+
+
 ###########################
 ## ----- Operators ----- ##
 ###########################
 
-def fetch_and_do(args, n, operator, cmp=None, key=None, reverse=False):
-    """ Sort args with the given sorting arguments, take the first *n*, and
-    return the result of *operator* on these. """
-    return operator(sorted(args, cmp=cmp, key=key, reverse=reverse)[:n])
+## Simple arithmetic
+sum_op = ReduceOperator(sum, 0)
+neg_op = IndexedOperator(op.neg, [0])
+sub_op = IndexedOperator(op.sub, [0, 1], unpack=True)
+mul_op = ReduceOperator(np.prod, 1)
 
-
-median = lambda a: int(np.median(a))
-summate = fn.partial(reduce, op.add)
-sum_nlargest = fn.partial(fetch_and_do, operator=summate, reverse=True)
-sum_nsmallest = fn.partial(fetch_and_do, operator=summate, reverse=False)
-
+## Max/Min
+max_op = ReduceOperator(max)
+min_op = ReduceOperator(min)
 
 ##############################
 ## ----- Main Classes ----- ##
@@ -139,7 +212,7 @@ class DiscreteRandomVariable(object):
     @property
     def ps(self):
         """ The probabilities of the random variable. """
-        return self._rv.pk
+        return np.array(self._rv.pk)
 
     @property
     def values(self):
@@ -294,7 +367,7 @@ class DiscreteRandomVariable(object):
         """ Return a new discrete random variable, which is the result of
         *operator* on *self*. """
         pool = RandomVariablePool(self)
-        return pool.operate(operator, name=name)
+        return operator(pool, name)
 
     def binop(self, other, operator, name):
         """ Return a new discrete random variable, which is the result of
@@ -305,7 +378,7 @@ class DiscreteRandomVariable(object):
             other = constant(other)
 
         pool = RandomVariablePool(self, other)
-        return pool.operate(operator, name=name)
+        return operator(pool, name)
 
         d = col.defaultdict(float)
 
@@ -322,10 +395,10 @@ class DiscreteRandomVariable(object):
         return DiscreteRandomVariable(new_name, xs=new_xs, ps=new_ps)
 
     def __add__(self, other):
-        return self.binop(other, op.add, "({_0.name})+({_1.name})")
+        return self.binop(other, sum_op, "({_0.name})+({_1.name})")
 
     def __and__(self, other):
-        return self.binop(other, min, "({_0.name})&({_1.name})")
+        return self.binop(other, min_op, "({_0.name})&({_1.name})")
 
     def __ge__(self, other):
         return self.binop(other, op.ge, "({_0.name})>=({_1.name})")
@@ -340,17 +413,19 @@ class DiscreteRandomVariable(object):
         return self.binop(other, op.lt, "({_0.name})<({_1.name})")
 
     def __mul__(self, other):
-        return self.binop(other, op.add, "{_0.name})*({_1.name})")
+        return self.binop(other, mul_op, "{_0.name})*({_1.name})")
 
     def __neg__(self):
-        return self.unop(op.neg, "-({_0.name})")
-        new_name = "-({})".format(self.name)
-        new_xs = -self._rv.xk
-        new_ps = self._rv.pk
-        return DiscreteRandomVariable(new_name, xs=new_xs, ps=new_ps)
+        return self.unop(neg_op, "-({_0.name})")
 
     def __or__(self, other):
-        return self.binop(other, max, "({_0.name})|({_1.name})")
+        return self.binop(other, max_op, "({_0.name})|({_1.name})")
+
+    def __sub__(self, other):
+        return self.binop(other, sub_op, "({_0.name})-({_1.name})")
+
+    def compare(self, other):
+        return self.binop(other, compare, "({_0.name})<>({_1.name})")
 
 
 class RandomVariablePool(object):
@@ -362,50 +437,50 @@ class RandomVariablePool(object):
     def __len__(self):
         return len(self.drvs)
 
-    def operate(self, operator, name):
-        d = col.defaultdict(float)
+    @property
+    def xs(self):
+        pool_xs = []
+        n = len(self.drvs)
+        for i, drv in enumerate(self.drvs):
+            drv_xs = drv.xs
+            m = len(drv_xs)
+            shape = [1 if j != i else m for j in xrange(n)]
+            pool_xs.append(drv.xs.reshape(shape))
+        return pool_xs
 
-        print self.drvs
-        for xp in it.product(*(drv.values for drv in self.drvs)):
-            xs, ps = unzip(xp)
-            val = operator(xs)
-            ival = int(val)
-            if not val == ival:
-                raise ValueError("Operator must return integer values.")
-            d[ival] += reduce(op.mul, ps)
-
-        formatter = dict(("_{i}".format(i=i), drv) for i, drv in
-                         enumerate(self.drvs))
-        _name = name.format(**formatter)
-
-        _xs = d.keys()
-        _ps = d.values()
-        return DiscreteRandomVariable(_name, xs=_xs, ps=_ps)
+    @property
+    def ps(self):
+        pool_ps = []
+        n = len(self.drvs)
+        for i, drv in enumerate(self.drvs):
+            drv_ps = drv.ps
+            m = len(drv_ps)
+            shape = [1 if j != i else m for j in xrange(n)]
+            pool_ps.append(drv.ps.reshape(shape))
+        return pool_ps
 
     def max(self, name):
         """ Return the random variable of the maximum of the outcomes. """
-        return self.operate(max, name)
+        return max_op(self, name)
 
     def median(self, name):
         """ Return the median of the outcomes; this works only if the number of
         rolls is even. """
-        if not len(self) % 2:
-            raise ValueError("Can only do medians of odd dice pools.")
-        return self.operate(median, name)
+        raise NotImplementedError
 
     def nlargest(self, name, n):
         """ Return the random variable of the sum of the *n* largest outcomes.
         """
-        return self.operate(fn.partial(sum_nlargest, n=n), name)
+        raise NotImplementedError
 
     def nsmallest(self, name, n):
         """ Return the random variable of the sum of the *n* smallest outcomes.
         """
-        return self.operate(fn.partial(sum_nsmallest, n=n), name)
+        raise NotImplementedError
 
     def sum(self, name):
         """ Return the random variable of the sum of the pool. """
-        return self.operate(summate, name)
+        return sum_op(self, name)
 
 
 ##################################
@@ -420,17 +495,6 @@ def constant(n):
 ######################
 ## ----- Dice ----- ##
 ######################
-
-
-def ndk(n, k):
-    """ Return the random variable representing rolling *n* *k*-sided dice. """
-    name = "{n}d{k}".format(n=n, k=k)
-    die = DiscreteRandomVariable(name, rv=ss.randint(1, k + 1))
-    if n == 1:
-        return die
-
-    return RandomVariablePool(*(die for _ in xrange(n))).sum(name=name)
-
 
 _pool_cache = {}
 
