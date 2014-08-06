@@ -102,6 +102,8 @@ class ReduceOperator(Operator):
                 return constant(self.identity)
             raise ValueError
 
+        ## This is the naive implementation, but binary implementation won't be
+        ## too difficult, and may be more efficient
         drvs = pool.drvs
         res = drvs[0]
         for rv in drvs[1:]:
