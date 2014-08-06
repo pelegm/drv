@@ -4,9 +4,7 @@
 This module provides plotting facilities for the discrete random variables.
 """
 
-# import numpy as np
 import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
 
 
 def _y_of_path(xs, ys, x, n=100):

@@ -5,9 +5,14 @@ Role-playing game dice mechanisms.
 """
 
 ## Framework
-import drv
+import drv.core
 import scipy.stats as ss
 import functools as fn
+
+
+## Sugar
+DRV = drv.core.DiscreteRandomVariable
+POOL = drv.core.RandomVariablePool
 
 
 ########################
@@ -19,7 +24,7 @@ def dk(k, name=None):
     """
     _name = name or "1d{k}"
     name = _name.format(k=k)
-    return drv.DiscreteRandomVariable(name, rv=ss.randint(1, k + 1))
+    return DRV(name, rv=ss.randint(1, k + 1))
 
 
 def ndk(n, k, name=None):
@@ -30,7 +35,7 @@ def ndk(n, k, name=None):
 
     _name = name or "{n}d{k}"
     name = _name.format(n=n, k=k)
-    return drv.RandomVariablePool(*(die for _ in xrange(n))).sum(name=name)
+    return POOL(*(die for _ in xrange(n))).sum(name=name)
 
 
 #####################
@@ -69,7 +74,7 @@ fudge_die.name = 'fudge'
 def fudge_test(skill, target):
     """ Return a random variable which rolls 4 fudge die, adds it to *skill*,
     and checks whether it is at least *target*. """
-    fudge_sum = drv.RandomVariablePool(*([fudge_die] * 4)).sum('fudge_sum')
+    fudge_sum = POOL(*([fudge_die] * 4)).sum('fudge_sum')
     test = (fudge_sum + skill) >= target
     test.mask = {1: 'Success', 0: 'Failure'}
     return test
