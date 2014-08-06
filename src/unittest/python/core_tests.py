@@ -28,7 +28,7 @@ class UnzipTest(unittest.TestCase):
         self.assertEqual(test_b, (2, 3, 4))
 
 
-class DiscreteRandomVariableRandintTest(unittest.TestCase):
+class DiscreteRandomVariableTest(object):
     attrs = {
         'name': 'test_randint',
         'max': 100,
@@ -36,6 +36,42 @@ class DiscreteRandomVariableRandintTest(unittest.TestCase):
         'median': None,
         'min': -50,
         'std': None,
+        'variance': None,
+    }
+
+
+class DiscreteRandomVariableConstantTest(unittest.TestCase,
+                                         DiscreteRandomVariableTest):
+    attrs = {
+        'name': None,
+        'max': 17,
+        'mean': None,
+        'median': None,
+        'min': None,
+        'std': 0,
+        'variance': 0,
+    }
+
+    def setUp(self):
+        n = self.attrs['max']
+        self.attrs['name'] = str(n)
+        self.attrs['mean'] = n
+        self.attrs['median'] = n
+        self.attrs['min'] = n
+
+        self.drv = drv.core.constant(n)
+
+
+class DiscreteRandomVariableRandintTest(unittest.TestCase,
+                                        DiscreteRandomVariableTest):
+    attrs = {
+        'name': 'test_randint',
+        'max': 100,
+        'mean': None,
+        'median': None,
+        'min': -50,
+        'std': None,
+        'variance': None,
     }
 
     def setUp(self):
@@ -43,6 +79,7 @@ class DiscreteRandomVariableRandintTest(unittest.TestCase):
         self.attrs['mean'] = rng.mean()
         self.attrs['median'] = np.median(rng)
         self.attrs['std'] = rng.std()
+        self.attrs['variance'] = rng.var()
 
         self.rv = ss.randint(self.attrs['min'], self.attrs['max'] + 1)
         self.drv = drv.core.DiscreteRandomVariable('test_randint', rv=self.rv)
@@ -54,12 +91,15 @@ def test_gen(key):
         actual = getattr(self.drv, key)
         msg = "{} test has failed; expected {}, got {}".format(key, expected,
                                                                actual)
-        self.assertAlmostEqual(expected, actual, msg=msg)
+        if isinstance(expected, str):
+            self.assertEqual(expected, actual, msg=msg)
+        else:
+            self.assertAlmostEqual(expected, actual, msg=msg)
     return test
 
 
-for key in DiscreteRandomVariableRandintTest.attrs:
+for key in DiscreteRandomVariableTest.attrs:
     test = test_gen(key)
     test_name = "test_{}".format(key)
-    setattr(DiscreteRandomVariableRandintTest, test_name, test)
+    setattr(DiscreteRandomVariableTest, test_name, test)
 
