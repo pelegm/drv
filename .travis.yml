@@ -9,6 +9,7 @@ before_install:
   - sudo apt-get install -qq python-numpy python-scipy
 
 before_script:
+  - pip install pybuilder
   - pip install coveralls
 
 script:
