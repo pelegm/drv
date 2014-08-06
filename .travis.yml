@@ -5,6 +5,9 @@ python:
   - "3.2"
   - "3.3"
 
+before_install:
+  - sudo apt-get install libblas
+
 install:
   - pip install scipy
   - pip install pybuilder
