@@ -66,7 +66,7 @@ class Operator(object):
     def __call__(self, pool, name):
         return self._operate(pool, name)
 
-    def _operate(self, pool, name):
+    def _operate(self, pool, name, force_int=True):
         """ This method is intended to be overwritten by subclasses, for more
         efficient calculations. If not overwritten, a naive calculation is
         being executed, which may take exponential time. """
@@ -77,6 +77,11 @@ class Operator(object):
         for xp in it.product(*(drv.values for drv in pool.drvs)):
             xs, ps = unzip(xp)
             val = self.operator(xs)
+            if force_int:
+                ival = int(val)
+                if ival != val:
+                    raise ValueError("Output is not an integer.")
+                val = ival
             d[val] += reduce(op.mul, ps)
 
         formatter = dict(("_{i}".format(i=i), drv) for i, drv in
@@ -110,13 +115,16 @@ class ReduceOperator(Operator):
     def _pack(self, drv, name):
         return drv
 
+    force_int = True
+
     def _reduce(self, drvs, name):
         ## This is the naive implementation, but binary implementation won't be
         ## too difficult, and may be more efficient
         res = drvs[0]
         for rv in drvs[1:]:
             _pool = RandomVariablePool(res, rv)
-            res = super(ReduceOperator, self)._operate(_pool, name)
+            res = super(ReduceOperator, self)._operate(
+                _pool, name, force_int=self.force_int)
 
         return self._pack(res, name)
 
@@ -140,9 +148,11 @@ class MemoryReduceOperator(ReduceOperator):
         return drvs
 
     def _pack(self, drv):
-        xs = [self.uncast(x) for x in drv.xs]
+        xs = [int(self.uncast(x)) for x in drv.xs]
         ps = drv.ps
         return DiscreteRandomVariable(drv.name, xs=xs, ps=ps)
+
+    force_int = False
 
 
 class IndexedOperator(Operator):
