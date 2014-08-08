@@ -188,6 +188,7 @@ ge_op = IndexedOperator(op.ge, [0, 1], unpack=True)
 gt_op = IndexedOperator(op.gt, [0, 1], unpack=True)
 le_op = IndexedOperator(op.le, [0, 1], unpack=True)
 lt_op = IndexedOperator(op.lt, [0, 1], unpack=True)
+cmp_op = IndexedOperator(cmp, [0, 1], unpack=True)
 
 
 ## n'th highest
@@ -498,7 +499,7 @@ class DiscreteRandomVariable(object):
         return self.binop(other, sub_op, "({_0.name})-({_1.name})")
 
     def compare(self, other):
-        return self.binop(other, compare, "({_0.name})<>({_1.name})")
+        return self.binop(other, cmp_op, "({_0.name})<>({_1.name})")
 
 
 class RandomVariablePool(object):
