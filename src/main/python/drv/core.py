@@ -179,6 +179,7 @@ gt_op = IndexedOperator(op.gt, [0, 1], unpack=True)
 le_op = IndexedOperator(op.le, [0, 1], unpack=True)
 lt_op = IndexedOperator(op.lt, [0, 1], unpack=True)
 
+
 ## n'th highest
 def _tuple(n):
     """ Return a function which casts a value into a padded tuple.count """
@@ -404,7 +405,9 @@ class DiscreteRandomVariable(object):
 
     @property
     def median(self):
-        """ The median of the random variable. """
+        """ The median of the random variable. Following SciPy's convention,
+        this is simply the PPF of 0.5 (hence it is unique). """
+        ## TODO: think of something smarter...
         return self._rv.median()
 
     @property
