@@ -84,9 +84,7 @@ class D20Test(Test, unittest.TestCase):
         self.attrs['name'] = self.name.format(s, t)
         mean = min(max(1 - (t - s - 1) * 0.05, 0), 1)
         self.attrs['mean'] = mean
-        if 0 < t - s <= 20:
-            median = 0.5
-        elif t - s > 20:
+        if 0 < t - s:
             median = 0
         else:
             median = 1
