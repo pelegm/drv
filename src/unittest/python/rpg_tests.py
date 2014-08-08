@@ -79,8 +79,10 @@ class D20Test(Test, unittest.TestCase):
     def setUp(self):
         s = self.attrs['skill']
         t = self.attrs['target']
+        self.attrs['min'] = 0
+        self.attrs['max'] = 1
         self.attrs['name'] = self.name.format(s, t)
-        mean = min(max(1 - (t - s) * 0.05, 0), 1)
+        mean = min(max(1 - (t - s - 1) * 0.05, 0), 1)
         self.attrs['mean'] = mean
         if 0 < t - s <= 20:
             median = 0.5
