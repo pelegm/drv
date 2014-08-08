@@ -8,6 +8,12 @@ A python builder.
 import sys
 sys.path.insert(0, 'src/main/python')
 
+## Get git version
+import subprocess as sp
+
+
+git_version = sp.check_output(['git', 'describe']).strip()
+
 
 ## The following is based on the github recommendation of pybuilder
 from pybuilder.core import Author, init, use_plugin
@@ -22,7 +28,7 @@ use_plugin("python.distutils")
 authors = [Author('pelegm', email='freepeleg@gmail.com')]
 url = "https://github.com/pelegm/dicerv"
 license = "unlicense"
-version = "0.1"
+version = git_version
 
 
 default_task = ["analyze", "publish"]
