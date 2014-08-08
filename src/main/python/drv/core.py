@@ -70,15 +70,18 @@ class Operator(object):
         """ This method is intended to be overwritten by subclasses, for more
         efficient calculations. If not overwritten, a naive calculation is
         being executed, which may take exponential time. """
+        DRV = type(pool.drvs[0])
+
         d = col.defaultdict(float)
 
         for xp in it.product(*(drv.values for drv in pool.drvs)):
             xs, ps = unzip(xp)
             val = self.operator(xs)
-            ival = int(val)
-            if not val == ival:
-                raise ValueError("Operator must return integer values.")
-            d[ival] += reduce(op.mul, ps)
+            # ival = int(val)
+            # if not val == ival:
+                # raise ValueError("Operator must return integer values.")
+            # d[ival] += reduce(op.mul, ps)
+            d[val] += reduce(op.mul, ps)
 
         formatter = dict(("_{i}".format(i=i), drv) for i, drv in
                          enumerate(pool.drvs))
@@ -86,7 +89,7 @@ class Operator(object):
 
         _xs = d.keys()
         _ps = d.values()
-        return DiscreteRandomVariable(_name, xs=_xs, ps=_ps)
+        return DRV(_name, xs=_xs, ps=_ps)
 
 
 class ReduceOperator(Operator):
@@ -102,15 +105,48 @@ class ReduceOperator(Operator):
                 return constant(self.identity)
             raise ValueError
 
+        drvs = self._prepare(pool)
+        return self._reduce(drvs, name)
+
+    def _prepare(self, pool):
+        return pool.drvs
+
+    def _pack(self, drv, name):
+        return drv
+
+    def _reduce(self, drvs, name):
         ## This is the naive implementation, but binary implementation won't be
         ## too difficult, and may be more efficient
-        drvs = pool.drvs
         res = drvs[0]
         for rv in drvs[1:]:
             _pool = RandomVariablePool(res, rv)
             res = super(ReduceOperator, self)._operate(_pool, name)
 
-        return res
+        return self._pack(res, name)
+
+
+class MemoryReduceOperator(ReduceOperator):
+    """ A class of operators which may be reduced to binary operators, keeping
+    state. """
+    def __init__(self, cast, uncast, operator, identity=None, unpack=False):
+        super(MemoryReduceOperator, self).__init__(operator, identity=identity,
+                                                   unpack=unpack)
+        self.cast = cast
+        self.uncast = uncast
+
+    def _prepare(self, pool):
+        drvs = []
+        for drv in pool.drvs:
+            xs = [self.cast(x) for x in drv.xs]
+            ps = drv.ps
+            drvs.append(BareDiscreteRandomVariable(xs, ps))
+
+        return drvs
+
+    def _pack(self, drv):
+        xs = [self.uncast(x) for x in drv.xs]
+        ps = drv.ps
+        return DiscreteRandomVariable(drv.name, xs=xs, ps=ps)
 
 
 class IndexedOperator(Operator):
@@ -147,10 +183,43 @@ gt_op = IndexedOperator(op.gt, [0, 1], unpack=True)
 le_op = IndexedOperator(op.le, [0, 1], unpack=True)
 lt_op = IndexedOperator(op.lt, [0, 1], unpack=True)
 
+## n'th highest
+def _tuple(n):
+    """ Return a function which casts a value into a padded tuple.count """
+    def helper(x, n=n):
+        return tuple([x] + [None] * (n - 1))
+    return helper
+
+
+def _get_n_highest(n):
+    """ Return a function which gets two n-tuples and return one n-tuple which
+    contains the highest values. Ignore Nones. """
+    def n_highest(a, b):
+        merged = [x for x in a + b if x is not None]
+        highest = sorted(merged)[-n:]
+        if len(highest) < n:
+            highest += [None] * (n - len(highest))
+        return highest
+
+
+def nth_highest(n):
+    """ Return an operator which returns the n'th highest result. """
+    mro = MemoryReduceOperator(cast=_tuple(n), uncast=min,
+                               operator=_get_n_highest(n), unpack=True)
+
 
 ##############################
 ## ----- Main Classes ----- ##
 ##############################
+
+class BareDiscreteRandomVariable(object):
+    """ A general discrete random variables with no calculation methods, whose
+    values may be any values, and which provides no data checks. """
+    def __init__(self, name, xs, ps):
+        self.name = name
+        self.xs = xs
+        self.ps = ps
+
 
 class DiscreteRandomVariable(object):
     """ A ``DiscreteRandomVariable`` is a wrapper for a integer-valued discrete
@@ -221,7 +290,7 @@ class DiscreteRandomVariable(object):
     @property
     def ps(self):
         """ The probabilities of the random variable. """
-        return np.array(self._rv.pk)
+        return self._rv.pk
 
     @property
     def values(self):
@@ -388,20 +457,6 @@ class DiscreteRandomVariable(object):
 
         pool = RandomVariablePool(self, other)
         return operator(pool, name)
-
-        d = col.defaultdict(float)
-
-        for (x, px), (y, py) in it.product(self.values, other.values):
-            val = operator(x, y)
-            ival = int(val)
-            if not val == ival:
-                raise ValueError("Operator must return integer values.")
-            d[ival] += px * py
-
-        new_name = name.format(x=self, y=other)
-        new_xs = d.keys()
-        new_ps = d.values()
-        return DiscreteRandomVariable(new_name, xs=new_xs, ps=new_ps)
 
     def __add__(self, other):
         return self.binop(other, sum_op, "({_0.name})+({_1.name})")
