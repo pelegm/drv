@@ -16,7 +16,7 @@ install:
   - pip install coveralls
 
 script:
-  - pyb
+  - pyb -v
 
 after_success:
   - coveralls --verbose
