@@ -80,21 +80,93 @@ class D20Test(Test, unittest.TestCase):
     def setUp(self):
         s = self.attrs['skill']
         t = self.attrs['target']
-        self.attrs['min'] = 0
-        self.attrs['max'] = 1
         self.attrs['name'] = self.name.format(s, t)
         mean = min(max(1 - (t - s - 1) * 0.05, 0), 1)
         self.attrs['mean'] = mean
-        if 0 < t - s:
+
+        ## Both success and failure are possible
+        if 0 < t - s <= 20:
+            _max = 1
+            _min = 0
             median = 0
+
+        ## Only failure is possible
+        elif t - s > 20:
+            _max = 0
+            _min = 0
+            median = 0
+
+        ## Only success is possible
         else:
+            _max = 1
+            _min = 1
             median = 1
+
+        self.attrs['max'] = _max
+        self.attrs['min'] = _min
         self.attrs['median'] = median
         variance = mean - mean ** 2
         self.attrs['std'] = np.sqrt(variance)
         self.attrs['variance'] = variance
 
         self.drv = drv.rpg.d20_test(s, t)
+
+
+class D20OpposedTest(Test, unittest.TestCase):
+    attrs = {
+        'skill_a': 11,
+        'skill_b': 17,
+    }
+
+    name = "d20 opposed test: A ({}) against B ({})"
+
+    def setUp(self):
+        sa = self.attrs['skill_a']
+        sb = self.attrs['skill_b']
+
+        win_prob = max(min(0.5 + (sa - sb) * 0.05, 1), 0)
+        loss_prob = max(min(0.5 + (sb - sa) * 0.05, 1), 0)
+        mean = self.attrs['mean'] = win_prob - loss_prob
+
+        ## Win, tie and loss are all possible
+        if -19 < sa - sb < 19:
+            _max = 1
+            _min = -1
+            median = 0
+
+        ## Only win and tie are possible
+        elif sa - sb == 19:
+            _max = 1
+            _min = 0
+            median = 1
+
+        ## Only win is possible
+        elif sa - sb >= 20:
+            _max = 1
+            _min = 1
+            median = 1
+
+        ## Only loss and tie are possible
+        elif sa - sb == -19:
+            _max = 0
+            _min = -1
+            median = -1
+
+        ## Only loss is possible:
+        elif sa - sb <= -20:
+            _max = -1
+            _min = -1
+            median = -1
+
+        self.attrs['max'] = _max
+        self.attrs['min'] = _min
+        self.attrs['median'] = median
+        self.attrs['name'] = self.name.format(sa, sb)
+        variance = mean - mean ** 2
+        self.attrs['std'] = np.sqrt(variance)
+        self.attrs['variance'] = variance
+
+        self.drv = drv.rpg.d20_opposed_test(sa, sb)
 
 
 for key in Test.attrs:
