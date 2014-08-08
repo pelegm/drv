@@ -59,8 +59,9 @@ class NDKTest(Test, unittest.TestCase):
         self.attrs['min'] = n
         self.attrs['max'] = n * k
         self.attrs['name'] = "{n}d{k}".format(n=n, k=k)
-        self.attrs['mean'] = n * ((k + 1.0) / 2)
-        self.attrs['median'] = n * ((k + 1.0) / 2)
+        mean = n * ((k + 1.0) / 2)
+        self.attrs['mean'] = mean
+        self.attrs['median'] = int(mean)
         variance = n * ((k ** 2 - 1.0) / 12)
         self.attrs['std'] = np.sqrt(variance)
         self.attrs['variance'] = variance
