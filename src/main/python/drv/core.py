@@ -77,10 +77,6 @@ class Operator(object):
         for xp in it.product(*(drv.values for drv in pool.drvs)):
             xs, ps = unzip(xp)
             val = self.operator(xs)
-            # ival = int(val)
-            # if not val == ival:
-                # raise ValueError("Operator must return integer values.")
-            # d[ival] += reduce(op.mul, ps)
             d[val] += reduce(op.mul, ps)
 
         formatter = dict(("_{i}".format(i=i), drv) for i, drv in
