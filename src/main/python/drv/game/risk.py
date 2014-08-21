@@ -39,6 +39,8 @@ def attack(attacker, defender):
     _op = _risk_op(attacker, defender)
     pool = POOL(*(dk(6) for _ in xrange(attacker + defender)))
     atk = _op(pool, "Risk attack: {} attack {}".format(attacker, defender))
+    atk.mask = {-2: 'attacker loses 2', -1: 'attacker loses 1',
+                0: 'both lose 1', 1: 'defender loses 1', 2: 'defender loses 2'}
     return atk
 
 
