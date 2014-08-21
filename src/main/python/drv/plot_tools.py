@@ -15,6 +15,8 @@ def _y_of_path(xs, ys, x, n=100):
         if a > x:
             break
         prev_a, prev_b = a, b
+    if None in (prev_a, prev_b):
+        return None
     slope = (b - prev_b) / (a - prev_a)
     return prev_b + slope * (x - prev_a)
 
@@ -33,6 +35,8 @@ def _plot_axes(xlabel=None, ylabel=None, title=None):
 
 def _plot_curve_mean(x, y, mean):
     mean_y = _y_of_path(x, y, mean)
+    if mean_y is None:
+        return
 
     xy_mean_text = mean, max(y) * 1.2
     plt.annotate("Mean", xy=(mean, mean_y), xytext=xy_mean_text,
@@ -43,9 +47,13 @@ def _plot_curve_mean(x, y, mean):
 def _plot_curve_std(x, y, mean, std):
     left_x = mean - std
     left_y = _y_of_path(x, y, left_x)
+    if left_y is None:
+        return
     plt.plot([left_x, left_x], [0, left_y], color='red')
     right_x = mean + std
     right_y = _y_of_path(x, y, right_x)
+    if right_y is None:
+        return
     plt.plot([right_x, right_x], [0, right_y], color='red')
 
     mid_y = min(left_y, right_y) * 0.5
