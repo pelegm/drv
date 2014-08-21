@@ -117,12 +117,17 @@ class D20OpposedTest(Test, unittest.TestCase):
 
     name = "d20 opposed test: A ({}) against B ({})"
 
+    def _conv(self, n):
+        """ Return the assumed probability of d20 - d20 = n. """
+        return min(20 + n, 20 - n) / 400.
+
     def setUp(self):
         sa = self.attrs['skill_a']
         sb = self.attrs['skill_b']
 
-        win_prob = max(min(0.5 + (sa - sb) * 0.05, 1), 0)
-        loss_prob = max(min(0.5 + (sb - sa) * 0.05, 1), 0)
+        win_prob = sum(self._conv(n) for n in xrange(-19, sa - sb))
+        loss_prob = sum(self._conv(n) for n in xrange(sa - sb + 1, 20))
+
         mean = self.attrs['mean'] = win_prob - loss_prob
 
         ## Win, tie and loss are all possible
