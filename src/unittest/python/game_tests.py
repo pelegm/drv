@@ -129,44 +129,39 @@ class D20OpposedTest(Test, unittest.TestCase):
         loss_prob = sum(self._conv(n) for n in xrange(sa - sb + 1, 20))
 
         mean = self.attrs['mean'] = win_prob - loss_prob
+        mean_sq = win_prob + loss_prob
+        variance = mean_sq - mean ** 2
+        self.attrs['std'] = np.sqrt(variance)
+        self.attrs['variance'] = variance
 
-        ## Win, tie and loss are all possible
-        if -19 < sa - sb < 19:
+        ## Maximum
+        if sa - sb >= -18:
             _max = 1
-            _min = -1
-            median = 0
-
-        ## Only win and tie are possible
-        elif sa - sb == 19:
-            _max = 1
-            _min = 0
-            median = 1
-
-        ## Only win is possible
-        elif sa - sb >= 20:
-            _max = 1
-            _min = 1
-            median = 1
-
-        ## Only loss and tie are possible
         elif sa - sb == -19:
             _max = 0
-            _min = -1
-            median = -1
-
-        ## Only loss is possible:
-        elif sa - sb <= -20:
+        else:
             _max = -1
+
+        ## Minimum
+        if sa - sb <= 18:
             _min = -1
+        elif sa - sb == 19:
+            _min = 0
+        else:
+            _min = 1
+
+        ## Median
+        if _max == -_min:
+            median = 0
+        elif _max == 1:
+            median = 1
+        else:
             median = -1
 
         self.attrs['max'] = _max
         self.attrs['min'] = _min
         self.attrs['median'] = median
         self.attrs['name'] = self.name.format(sa, sb)
-        variance = mean - mean ** 2
-        self.attrs['std'] = np.sqrt(variance)
-        self.attrs['variance'] = variance
 
         self.drv = d20.opposed_test(sa, sb)
 
