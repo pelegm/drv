@@ -30,6 +30,7 @@ def _plot_axes(xlabel=None, ylabel=None, title=None):
         plt.ylabel(ylabel)
     if title:
         plt.title(title)
+
     return ax
 
 
@@ -62,7 +63,7 @@ def _plot_curve_std(x, y, mean, std):
                  arrowprops=dict(arrowstyle='->'), color='purple')
 
 
-def _plot_curve(x, y, mean=None, std=None, xlabel=None, ylabel=None,
+def _plot_curve(x, y, mean=None, std=None, xlabel=None, ylabel=None, mask=None,
                 title=None):
     ## Set figure and axes
     ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title)
@@ -95,10 +96,16 @@ def _plot_xkcd(plot_func, *args, **kwargs):
 def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
               xkcd=False):
     x, y = drv.pmf_graph()
+
+
     xlabel = 'RESULT'
     ylabel = 'PROBABILITY'
     title = drv.name
     kwargs = dict(xlabel=xlabel, ylabel=ylabel, title=title)
+
+    ## Mask
+    kwargs['mask'] = getattr(drv, 'mask')
+
     if mean:
         kwargs['mean'] = drv.mean
     if std:
@@ -125,10 +132,24 @@ def plot_pmf_curve(drv, filename=None, mean=False, std=False, xkcd=False):
               xkcd=xkcd)
 
 
+def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None):
+    ## Set figure and axes
+    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title)
+
+    ## Plot the curve itself
+    plt.bar(x, y, align='center')
+
+    ## Tick labels (mask)
+    if mask:
+        xticks = ax.get_xticks().tolist()
+        print xticks
+        new_xticks = [mask.get(xtick, '') for xtick in xticks]
+        ax.set_xticklabels(new_xticks)
+
+
 def plot_pmf_bars(drv, filename=None, xkcd=False):
     """ Plot the probability mass function of the random variable *drv* as a
     bar plot; if *filename* is given, save the figure, otherwise show it. If
     *xkcd*, plot it in ``xkcd`` style. """
-    _plot_pmf(_plot_bars, drv, filename=filename, mean=mean, std=std,
-              xkcd=xkcd)
+    _plot_pmf(_plot_bars, drv, filename=filename, xkcd=xkcd)
 
