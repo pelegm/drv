@@ -1,5 +1,5 @@
 """
-.. rpg_tests.py
+.. game_tests.py
 """
 
 ## Testing framework
@@ -9,12 +9,9 @@ import unittest
 import numpy as np
 import utils
 
-## Testing target
-import drv.rpg
-
-## Auxiliary
-import itertools as it
-import scipy.stats as ss
+## Testing targets
+import drv.game.base as base
+import drv.game.d20 as d20
 
 
 class Test(object):
@@ -44,7 +41,7 @@ class DKTest(Test, unittest.TestCase):
         self.attrs['std'] = np.sqrt((k ** 2 - 1.0) / 12)
         self.attrs['variance'] = (k ** 2 - 1.0) / 12
 
-        self.drv = drv.rpg.dk(k)
+        self.drv = base.dk(k)
 
 
 class NDKTest(Test, unittest.TestCase):
@@ -66,7 +63,7 @@ class NDKTest(Test, unittest.TestCase):
         self.attrs['std'] = np.sqrt(variance)
         self.attrs['variance'] = variance
 
-        self.drv = drv.rpg.ndk(n, k)
+        self.drv = base.ndk(n, k)
 
 
 class D20Test(Test, unittest.TestCase):
@@ -109,7 +106,7 @@ class D20Test(Test, unittest.TestCase):
         self.attrs['std'] = np.sqrt(variance)
         self.attrs['variance'] = variance
 
-        self.drv = drv.rpg.d20_test(s, t)
+        self.drv = d20.test(s, t)
 
 
 class D20OpposedTest(Test, unittest.TestCase):
@@ -166,7 +163,7 @@ class D20OpposedTest(Test, unittest.TestCase):
         self.attrs['std'] = np.sqrt(variance)
         self.attrs['variance'] = variance
 
-        self.drv = drv.rpg.d20_opposed_test(sa, sb)
+        self.drv = d20.opposed_test(sa, sb)
 
 
 for key in Test.attrs:
