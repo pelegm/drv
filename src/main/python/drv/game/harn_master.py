@@ -3,6 +3,7 @@
 """
 
 ## Framework
+import drv.core
 import drv.game.base
 
 ## Tools
@@ -23,8 +24,9 @@ def test(skill):
     nearest 5), and if the results divides by 5, the success/failure is
     critical. """
     die = dk(100)
-    name = "HarnMaster test"
-    tst = die.unop(fn.partial(_harn_master_operator, t=skill), name)
+    name = "HarnMaster test (skill {})".format(skill)
+    _op = fn.partial(_harn_master_operator, t=skill)
+    tst = die.unop(drv.core.Operator(_op, unpack=True), name)
     tst.mask = {-2: "Critical Failure", -1: "Failure", 1: "Success", 2:
                 "Critical Success"}
     return tst
