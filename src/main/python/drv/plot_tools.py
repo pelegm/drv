@@ -142,7 +142,6 @@ def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None):
     ## Tick labels (mask)
     if mask:
         xticks = ax.get_xticks().tolist()
-        print xticks
         new_xticks = [mask.get(xtick, '') for xtick in xticks]
         ax.set_xticklabels(new_xticks)
 
