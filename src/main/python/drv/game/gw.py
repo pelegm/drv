@@ -13,7 +13,8 @@ dk = drv.game.base.dk
 
 
 ## This dice is used, according to Wikipedia, in Necromunda and Mordheim
-D66 = dk(6) * 10 + dk(6)
+d66 = dk(6) * 10 + dk(6)
+d66.name = 'D66'
 
 
 ## This is introduced, according to Wikipedia, in Blood Bowl
