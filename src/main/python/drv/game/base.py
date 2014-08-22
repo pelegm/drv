@@ -31,3 +31,8 @@ def ndk(n, k, name=None):
     name = _name.format(n=n, k=k)
     return POOL(*(die for _ in xrange(n))).sum(name=name)
 
+
+## Percentile dice
+dp = dk(100)
+dp.name = 'd%'
+
