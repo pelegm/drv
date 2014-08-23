@@ -104,7 +104,7 @@ def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
     kwargs = dict(xlabel=xlabel, ylabel=ylabel, title=title)
 
     ## Mask
-    kwargs['mask'] = getattr(drv, 'mask')
+    kwargs['mask'] = getattr(drv, 'mask', None)
 
     if mean:
         kwargs['mean'] = drv.mean
