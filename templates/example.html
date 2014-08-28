@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block contents %}
+<main>
+<header>
+<h1 class="title"><a href="">DiceRV :: Examples :: {{ example.name }}</a></h1>
+</header>
+
+<div id="home">
+    <p class="intro">{{ example.intro }}</p>
+
+    {% for test in example.tests %}
+    <h2>{{ test.name }}</h2>
+    <code>{% highlight 'python' %}{{ test.code }}{% endhighlight %}</code>
+    <p>The output of the above code is:</p>
+    <pre>{{ test.output }}</pre>
+    {% endfor %}
+
+</main>
+
+{% endblock contents %}

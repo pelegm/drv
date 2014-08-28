@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block contents %}
+<main>
+<header>
+<h1 class="title"><a href="{{ baseurl }}">{{ title }}</a></h1>
+</header>
+
+<div id="home">
+    <p class="intro">{{ intro }}
+    (<a href="{{ github_url }}">fork</a>).</p>
+
+    <h2>Install</h2>
+    <p>TBA.</p>
+
+    <h2>Basic Usage</h2>
+    <div class="highlight">
+        <pre><code><span class="kn">import</span> <span class="nn">drv.game.basic</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">basic</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">dice</span><span class="o">.</span><span class="n">mean</span>
+</code></pre>
+    </div>
+
+    <p>
+    The output should be 10.5.
+    </p>
+
+    <h2>Examples</h2>
+    <ul class="posts">
+
+        <li><span>...</span> <a href="/examples/3d6.html">3d6</a></li>
+
+    </ul>
+    <hr>
+    <p>
+    <a href="{{ github_url }}"><img src="/img/cat.png" /></a>
+    </p>
+</div>
+
+</main>
+
+{% endblock contents %}
