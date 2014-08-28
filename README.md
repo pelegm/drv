@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/pelegm/dicerv.svg?branch=master)](https://travis-ci.org/pelegm/dicerv)
-
 # dicerv
 
 Dice random variables in Python made easy.

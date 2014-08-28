@@ -1,2 +1,5 @@
 ## Python compiled
 *.pyc
+
+## Pypi dist
+dist
