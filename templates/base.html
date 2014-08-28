@@ -16,7 +16,17 @@
       <title>{{ title }}</title>
    </head>
    <body>
+       <main>
        {% block contents %}
        {% endblock contents %}
+       <hr />
+       <footer>
+       <p>
+       <a href="{{ github_url }}"><img src="/img/cat.png" height=32px/></a>
+       <a href=""><img src="/img/jinja2.png" height=32px/></a>
+       </p>
+       </footer>
+       </main>
+
    </body>
 </html>
