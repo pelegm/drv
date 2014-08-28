@@ -4,6 +4,7 @@
 
 name: DiceRV
 author: Peleg M
+baseurl: '/dicerv'
 url: 'http://peleg.github.io/dicerv'
 
 title: "DiceRV"
