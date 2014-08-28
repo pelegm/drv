@@ -6,9 +6,10 @@ layout: default
 
   <ul class="posts">
     {% for page in site.pages %}
-      <li><span class="post-date">...</span>
-      {% if page.title %}<a class="post-link" href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a>{% endif %}
-      </li>
+    {% if page.title %}
+    <li><span class="post-date">...</span>
+      <a class="post-link" href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a>{% endif %}
+    </li>
     {% endfor %}
   </ul>
 
