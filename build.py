@@ -16,6 +16,12 @@ template = jinja2.Template(tpl)
 
 data = {}
 data['author'] = "Peleg Michaeli"
+data['intro'] = "Hi. This is the github page of the DiceRV project"
+data['title'] = "DiceRV"
+
+
+data['baseurl'] = '/dicerv'
+data['github_url'] = 'http://github.com/pelegm/dicerv'
 
 
 html = template.render(**data)

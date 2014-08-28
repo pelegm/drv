@@ -13,24 +13,24 @@
       <link rel="icon" href="/favicon.ico" type="image/x-icon">
       <link rel="alternate" type="application/atom+xml" href="/atom.xml">
       <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <title>DiceRV</title>
+      <title>{{ title }}</title>
    </head>
    
    <body>
       <main>
          <header>
-            <h1 class="title"><a href="/dicerv">DiceRV</a></h1>
+         <h1 class="title"><a href="{{ baseurl }}">{{ title }}</a></h1>
          </header>
 
          <div id="home">
-             <p class="intro">Hi. This is the github page of the DiceRV project
-             (<a href="http://github.com/pelegm/dicerv">fork</a>).</p>
+             <p class="intro">{{ intro }}
+             (<a href="{{ github_url }}">fork</a>).</p>
 
              <h2>Install</h2>
-             TBA.
+             <p>TBA.</p>
 
              <h2>Basic Usage</h2>
-             TBA.
+             <p>TBA.</p>
 
              <h2>Examples</h2>
              <ul class="posts">
