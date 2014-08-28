@@ -13,7 +13,7 @@
     <h2>{{ test.name }}</h2>
     <code>{% highlight 'python' %}{{ test.code }}{% endhighlight %}</code>
     <p>The output of the above code is:</p>
-    <pre>{{ test.output }}</pre>
+    <code><pre>{{ test.output }}</pre></code>
     {% endfor %}
 
 </main>

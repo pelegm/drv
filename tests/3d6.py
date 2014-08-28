@@ -15,4 +15,5 @@ print "Max:", dice.max
 #: Probability of getting at least 13
 import drv.game.base
 dice = drv.game.base.ndk(3, 6)
-print "Probability: {:.2%}".format(dice.pr(lambda d: d >= 13))
+hit = lambda d: d >= 13
+print "Probability: {:.2%}".format(dice.pr(hit))

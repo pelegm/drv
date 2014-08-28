@@ -34,9 +34,9 @@
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
-    <pre>Mean: 10.5
+    <code><pre>Mean: 10.5
 STD: 2.95803989155
-</pre>
+</pre></code>
     
     <h2>Minimum and maximum of 3d6</h2>
     <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
@@ -46,19 +46,20 @@ STD: 2.95803989155
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
-    <pre>Min: 3
+    <code><pre>Min: 3
 Max: 18
-</pre>
+</pre></code>
     
     <h2>Probability of getting at least 13</h2>
     <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
 <span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Probability: {:.2%}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dice</span><span class="o">.</span><span class="n">pr</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="mi">13</span><span class="p">))</span>
+<span class="n">hit</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="mi">13</span>
+<span class="k">print</span> <span class="s">&quot;Probability: {:.2%}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dice</span><span class="o">.</span><span class="n">pr</span><span class="p">(</span><span class="n">hit</span><span class="p">))</span>
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
-    <pre>Probability: 25.93%
-</pre>
+    <code><pre>Probability: 25.93%
+</pre></code>
     
 
 </main>
