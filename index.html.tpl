@@ -4,7 +4,7 @@
       <meta charset="utf-8">
       <meta name="description" content="DiceRV - Dice Random Variables Made
       Easy">
-      <meta name="author" content="Peleg Michaeli">
+      <meta name="author" content="{{ author }}">
       <meta name="viewport" content="width=device-width">
       <link rel="stylesheet" href="/css/syntax.css">
       <link rel="stylesheet" href="/css/main.css">
