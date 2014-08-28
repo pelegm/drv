@@ -41,7 +41,7 @@
              <h2>Examples</h2>
              <ul class="posts">
 
-                 <li><span>...</span> <a href="/examples/d20/3d6">3d6</a></li>
+                 <li><span>...</span> <a href="/examples/3d6.html">3d6</a></li>
 
              </ul>
              <hr>
