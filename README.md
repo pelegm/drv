@@ -2,6 +2,8 @@
 
 Dice random variables in Python made easy.
 
+Check the new project webpage! Now at http://pelegm.github.io/dicerv.
+
 ## Table of Contents
 
 * [Documentation](#documentation)
@@ -15,7 +17,8 @@ The module is fully documented in *sphinx* style.
 ## Installation
 
 Simply download the module and put it either in your project's folder or in
-your `$PYTHONPATH`.
+your `$PYTHONPATH`. This will soon be a pypi package that will support easy
+installation via `pip`.
 
 
 ### Dependencies
@@ -41,7 +44,5 @@ but see *examples*.
 
 
 ### Examples
-
-Suppose I wish to plot the probability mass function of the common `3d6`
-combination (which is the sum of three 6-sided dice).
+Please check the project's webpage: http://pelegm.github.io/dicerv
 
