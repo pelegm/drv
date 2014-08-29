@@ -22,9 +22,10 @@ env.loader = j2.FileSystemLoader('templates/')
 ##########################
 
 class Test(object):
-    def __init__(self, name, code):
+    def __init__(self, name, code, figure=None):
         self.name = name
         self.code = code
+        self.figure = figure
 
     def run(self):
         _code_out = StringIO.StringIO()
@@ -97,8 +98,15 @@ for example_name in examples:
     for td in test_datas[1:]:
         tds = td.split("\n")
         test_name = tds[0][3:].strip()
-        code = "\n".join(tds[1:])
-        tests.append(Test(test_name, code))
+        code = ""
+        kwargs = {}
+        for line in tds[1:]:
+            if line[:2] == "#:":
+                key, value = line[3:].split("::")
+                kwargs[key] = value
+            else:
+                code += line + "\n"
+        tests.append(Test(test_name, code, **kwargs))
     example  = Example(example_name, example_intro, *tests)
 
     example.run()

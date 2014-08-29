@@ -39,4 +39,17 @@ import drv.game.base
 ## Define the random variable and roll
 dice = drv.game.base.ndk(3, 6)
 print [dice.roll() for _ in xrange(6)]
+#####
+#: Plot the PMF graph of 3d6
+#: figure::img/pmf.png
+import drv.game.base
+import drv.plot_tools as ptl
+
+## Define the random variable
+dice = drv.game.base.ndk(3, 6)
+
+## Plot the PMF graph
+kwargs = dict(filename='examples/img/pmf.png',
+              mean=True, std=True, xkcd=True)
+ptl.plot_pmf_curve(dice, **kwargs)
 

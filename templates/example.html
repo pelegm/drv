@@ -12,7 +12,12 @@
     <h2>{{ test.name }}</h2>
     <code>{% highlight 'python' %}{{ test.code }}{% endhighlight %}</code>
     <p>The output of the above code is:</p>
+    {% if test.output %}
     <code><pre>{{ test.output }}</pre></code>
+    {% endif %}
+    {% if test.figure %}
+    <img src="{{ test.figure }}">
+    {% endif %}
     <br>
     {% endfor %}
 
