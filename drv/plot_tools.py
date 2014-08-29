@@ -104,7 +104,7 @@ def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
     kwargs = dict(xlabel=xlabel, ylabel=ylabel, title=title)
 
     ## Mask
-    kwargs['mask'] = getattr(drv, 'mask')
+    kwargs['mask'] = getattr(drv, 'mask', None)
 
     if mean:
         kwargs['mean'] = drv.mean
@@ -121,7 +121,7 @@ def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
 
     ## Save
     else:
-        raise NotImplementedError
+        plt.savefig(filename)
 
 
 def plot_pmf_curve(drv, filename=None, mean=False, std=False, xkcd=False):
