@@ -60,15 +60,16 @@ data['baseurl'] = '/dicerv'
 data['github_url'] = 'http://github.com/pelegm/dicerv'
 
 
+examples = ['3d6', 'risk', 'special_dice']
+data['examples'] = examples
+
+
 html = template.render(**data)
 
 
 with open('index.html', 'w') as html_file:
     print "Writing {}".format('index.html')
     html_file.write(html)
-
-
-examples = ['3d6', 'risk']
 
 
 template = env.get_template('example.html')
