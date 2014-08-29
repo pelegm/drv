@@ -27,16 +27,22 @@
 
     
     <h2>Mean and standard deviation of 3d6</h2>
-    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
+    <code><div class="highlight"><pre><span class="c">#123456789#123456789#123456789#123456789#123456789#123456789#123456789#12345678</span>
+<span class="c">## The following code calculates and prints basic statistical results about the</span>
+<span class="c">## random variable representing 3d6.</span>
+<span class="kn">import</span> <span class="nn">drv.game.base</span>
 <span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">mean</span>
 <span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">std</span>
+<span class="k">print</span> <span class="s">&quot;Variance:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">variance</span>
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
     <code><pre>Mean: 10.5
 STD: 2.95803989155
+Variance: 8.75
 </pre></code>
+    <br>
     
     <h2>Minimum and maximum of 3d6</h2>
     <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
@@ -49,6 +55,7 @@ STD: 2.95803989155
     <code><pre>Min: 3
 Max: 18
 </pre></code>
+    <br>
     
     <h2>Probability of getting at least 13</h2>
     <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
@@ -60,6 +67,7 @@ Max: 18
     <p>The output of the above code is:</p>
     <code><pre>Probability: 25.93%
 </pre></code>
+    <br>
     
 
 
