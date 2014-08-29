@@ -152,6 +152,9 @@ def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None,
     fig, ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title,
                          figsize=figsize, dpi=dpi)
 
+    ## Set x limits
+    ax.set_xlim(min(x), max(x))
+
     ## Plot the curve itself
     plt.bar(x, y, align='center')
 
