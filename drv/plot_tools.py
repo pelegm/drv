@@ -5,6 +5,7 @@ This module provides plotting facilities for the discrete random variables.
 """
 
 import functools as fn
+import textwrap as tw
 import matplotlib.pyplot as plt
 
 
@@ -141,6 +142,10 @@ def plot_pmf_curve(drv, filename=None, mean=False, std=False, figsize=None,
               plot_kwargs=plot_kwargs)
 
 
+def _format_tick(mask, tick):
+    return "\n".join(tw.wrap(mask.get(tick, ''), width=10))
+
+
 def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None,
                figsize=None, dpi=None):
     ## Set figure and axes
@@ -153,15 +158,19 @@ def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None,
     ## Tick labels (mask)
     if mask:
         xticks = ax.get_xticks().tolist()
-        new_xticks = [mask.get(xtick, '') for xtick in xticks]
+        new_xticks = [_format_tick(mask, xtick) for xtick in xticks]
         ax.set_xticklabels(new_xticks)
 
     return fig
 
 
-def plot_pmf_bars(drv, filename=None, xkcd=False):
+def plot_pmf_bars(drv, filename=None, figsize=None, dpi=None, xkcd=False):
     """ Plot the probability mass function of the random variable *drv* as a
     bar plot; if *filename* is given, save the figure, otherwise show it. If
     *xkcd*, plot it in ``xkcd`` style. """
-    _plot_pmf(_plot_bars, drv, filename=filename, xkcd=xkcd)
+    plotter = _plot_bars
+    if xkcd:
+        plotter = fn.partial(_plot_xkcd, plotter)
+    plot_kwargs = dict(figsize=figsize, dpi=dpi)
+    _plot_pmf(plotter, drv, filename=filename, plot_kwargs=plot_kwargs)
 
