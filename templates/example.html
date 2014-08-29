@@ -2,7 +2,8 @@
 
 {% block contents %}
 <header>
-<h1 class="title"><a href="">DiceRV :: Examples :: {{ example.name }}</a></h1>
+<h1 class="title"><a href="">
+        DiceRV :: Examples :: {{ example.name | replace('_',' ') }}</a></h1>
 </header>
 
 <div id="home">
