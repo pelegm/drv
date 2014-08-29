@@ -38,5 +38,5 @@ import drv.game.base
 
 ## Define the random variable and roll
 dice = drv.game.base.ndk(3, 6)
-[dice.roll() for _ in xrange(6)]
+print [dice.roll() for _ in xrange(6)]
 

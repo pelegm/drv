@@ -43,6 +43,7 @@
 <span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">mean</span>
 <span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">std</span>
 <span class="k">print</span> <span class="s">&quot;Variance:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">variance</span>
+<span class="k">print</span> <span class="s">&quot;Median:&quot;</span><span class="p">,</span> <span class="n">dice</span><span class="o">.</span><span class="n">median</span>
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
@@ -51,6 +52,7 @@ Max: 18
 Mean: 10.5
 STD: 2.95803989155
 Variance: 8.75
+Median: 10.0
 </pre></code>
     <br>
     
@@ -69,6 +71,21 @@ Variance: 8.75
 </code>
     <p>The output of the above code is:</p>
     <code><pre>Probability: 25.93%
+</pre></code>
+    <br>
+    
+    <h2>Roll 3d6 a couple of times</h2>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.core</span>
+<span class="n">drv</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2014</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">drv.game.base</span>
+
+<span class="c">## Define the random variable and roll</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">[</span><span class="n">dice</span><span class="o">.</span><span class="n">roll</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+</pre></div>
+</code>
+    <p>The output of the above code is:</p>
+    <code><pre>[8, 9, 9, 17, 10, 12]
 </pre></code>
     <br>
     
