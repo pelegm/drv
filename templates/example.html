@@ -16,7 +16,9 @@
     <code><pre>{{ test.output }}</pre></code>
     {% endif %}
     {% if test.figure %}
-    <img src="{{ test.figure }}">
+    <div align='center'>
+        <img src="{{ test.figure }}">
+    </div>
     {% endif %}
     <br>
     {% endfor %}
