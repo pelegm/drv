@@ -4,6 +4,7 @@
 This module provides plotting facilities for the discrete random variables.
 """
 
+import functools as fn
 import matplotlib.pyplot as plt
 
 
@@ -21,8 +22,8 @@ def _y_of_path(xs, ys, x, n=100):
     return prev_b + slope * (x - prev_a)
 
 
-def _plot_axes(xlabel=None, ylabel=None, title=None):
-    fig = plt.figure()
+def _plot_axes(xlabel=None, ylabel=None, title=None, figsize=None, dpi=None):
+    fig = plt.figure(figsize=figsize, dpi=dpi)
     ax = fig.add_axes((0.1, 0.2, 0.8, 0.7))
     if xlabel:
         plt.xlabel(xlabel)
@@ -64,9 +65,10 @@ def _plot_curve_std(x, y, mean, std):
 
 
 def _plot_curve(x, y, mean=None, std=None, xlabel=None, ylabel=None, mask=None,
-                title=None):
+                title=None, figsize=None, dpi=None):
     ## Set figure and axes
-    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title)
+    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title, figsize=figsize,
+                    dpi=dpi)
 
     ## Plot the curve itself
     plt.plot(x, y)
@@ -94,9 +96,9 @@ def _plot_xkcd(plot_func, *args, **kwargs):
 
 
 def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
-              xkcd=False):
+              plot_kwargs=None):
+    plot_kwargs = plot_kwargs or {}
     x, y = drv.pmf_graph()
-
 
     xlabel = 'RESULT'
     ylabel = 'PROBABILITY'
@@ -110,10 +112,9 @@ def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
         kwargs['mean'] = drv.mean
     if std:
         kwargs['std'] = drv.std
-    if xkcd:
-        _plot_xkcd(plot_func, x, y, **kwargs)
-    else:
-        plot_func(x, y, **kwargs)
+
+    kwargs.update(plot_kwargs)
+    plot_func(x, y, **kwargs)
 
     ## Show
     if not filename:
@@ -124,17 +125,24 @@ def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
         plt.savefig(filename)
 
 
-def plot_pmf_curve(drv, filename=None, mean=False, std=False, xkcd=False):
+def plot_pmf_curve(drv, filename=None, mean=False, std=False, figsize=None,
+                   dpi=None, xkcd=False):
     """ Plot the probability mass function of the random variable *rv*; if
     *filename* is given, save the figure, otherwise show it. If *xkcd*, plot it
     in ``xkcd`` style. """
-    _plot_pmf(_plot_curve, drv, filename=filename, mean=mean, std=std,
-              xkcd=xkcd)
+    plotter = _plot_curve
+    if xkcd:
+        plotter = fn.partial(_plot_xkcd, plotter)
+    plot_kwargs = dict(figsize=figsize, dpi=dpi)
+    _plot_pmf(plotter, drv, filename=filename, mean=mean, std=std,
+              plot_kwargs=plot_kwargs)
 
 
-def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None):
+def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None,
+               figsize=None, dpi=None):
     ## Set figure and axes
-    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title)
+    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title, figsize=figsize,
+                    dpi=dpi)
 
     ## Plot the curve itself
     plt.bar(x, y, align='center')
