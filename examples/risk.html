@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta name="description" content="DiceRV - Dice Random Variables Made
+      Easy">
+      <meta name="author" content="">
+      <meta name="viewport" content="width=device-width">
+      <link rel="stylesheet" href="/css/syntax.css">
+      <link rel="stylesheet" href="/css/main.css">
+      <link rel="stylesheet" href="/css/normalize.css">
+      <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+      <link rel="icon" href="/favicon.ico" type="image/x-icon">
+      <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <title></title>
+   </head>
+   <body>
+       <main>
+       
+<header>
+<h1 class="title"><a href="">DiceRV :: Examples :: risk</a></h1>
+</header>
+
+<div id="home">
+    <p class="intro">Understanding a risk attack.</p>
+
+    
+    <h2>Simulating risk attacks</h2>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.core</span>
+<span class="n">drv</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2014</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">drv.game.risk</span> <span class="kn">as</span> <span class="nn">risk</span>
+
+<span class="c">## We define a random variable which represents</span>
+<span class="c">## the attack: 3 dice for the attacker, 2 for</span>
+<span class="c">## the defender</span>
+<span class="n">atk</span> <span class="o">=</span> <span class="n">risk</span><span class="o">.</span><span class="n">attack</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c">## The following rolls 1000 attacks and finds</span>
+<span class="c">## out in how many the attacker wins</span>
+<span class="n">result</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">atk</span><span class="o">.</span><span class="n">rolls_gen</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+<span class="k">print</span> <span class="s">&quot;Win:&quot;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">result</span><span class="p">)</span>
+</pre></div>
+</code>
+    <p>The output of the above code is:</p>
+    
+    <code><pre>Win: 390
+</pre></code>
+    
+    
+    <br>
+    
+    <h2>Visualizing possible results</h2>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.risk</span> <span class="kn">as</span> <span class="nn">risk</span>
+<span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
+
+<span class="c">## We define the attack random variable</span>
+<span class="n">atk</span> <span class="o">=</span> <span class="n">risk</span><span class="o">.</span><span class="n">attack</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c">## We plot the PMF bar plot</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/riskpmf.png&#39;</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+              <span class="n">xkcd</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">atk</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</code>
+    <p>The output of the above code is:</p>
+    
+    
+    <div align='center'>
+        <img src="img/riskpmf.png">
+    </div>
+    
+    <br>
+    
+
+
+       <hr />
+       <footer>
+       <p>
+       <a href=""><img src="/img/cat.png" height=32px/></a>
+       <a href=""><img src="/img/jinja2.png" height=32px/></a>
+       </p>
+       </footer>
+       </main>
+
+   </body>
+</html>

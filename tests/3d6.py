@@ -41,7 +41,7 @@ dice = drv.game.base.ndk(3, 6)
 print [dice.roll() for _ in xrange(6)]
 #####
 #: Plot the PMF graph of 3d6
-#: figure::img/pmf.png
+#: figure::img/3d6pmf.png
 import drv.game.base
 import drv.plot_tools as ptl
 

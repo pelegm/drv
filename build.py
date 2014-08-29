@@ -47,22 +47,6 @@ class Example(object):
             test.run()
 
 
-examples = []
-_3d6_mean = Test('3d6 mean', code="""
-import drv.game.base
-dice = drv.game.base.ndk(3, 6)
-print dice.mean
-""")
-_3d6_std = Test('3d6 standard deviation', code="""
-import drv.game.base
-dice = drv.game.base.ndk(3, 6)
-print dice.std
-""")
-_3d6_intro = "Rolling three 6-sided dice, checking the results."
-_3d6 = Example('3d6', _3d6_intro, _3d6_mean, _3d6_std)
-examples = [_3d6]
-
-
 template = env.get_template('index.html')
 
 
@@ -84,7 +68,7 @@ with open('index.html', 'w') as html_file:
     html_file.write(html)
 
 
-examples = ['3d6']
+examples = ['3d6', 'risk']
 
 
 template = env.get_template('example.html')
