@@ -15,6 +15,9 @@ import scipy.stats as ss
 import numpy as np
 inf = np.inf
 
+## Randomization
+seed = np.random.seed
+
 ## Data containers
 import collections as col
 
