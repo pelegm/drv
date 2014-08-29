@@ -94,7 +94,8 @@ def _plot_curve(x, y, mean=None, std=None, xlabel=None, ylabel=None, mask=None,
 def _plot_xkcd(plot_func, *args, **kwargs):
     """ Plot with *plot_func*, *args* and **kwargs*, but in xkcd style. """
     with plt.xkcd():
-        plot_func(*args, **kwargs)
+        fig = plot_func(*args, **kwargs)
+    return fig
 
 
 def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
