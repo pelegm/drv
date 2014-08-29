@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta name="description" content="DiceRV - Dice Random Variables Made
+      Easy">
+      <meta name="author" content="">
+      <meta name="viewport" content="width=device-width">
+      <link rel="stylesheet" href="/css/syntax.css">
+      <link rel="stylesheet" href="/css/main.css">
+      <link rel="stylesheet" href="/css/normalize.css">
+      <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+      <link rel="icon" href="/favicon.ico" type="image/x-icon">
+      <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <title></title>
+   </head>
+   <body>
+       <main>
+       
+<header>
+<h1 class="title"><a href="">
+        DiceRV :: Examples :: special dice</a></h1>
+</header>
+
+<div id="home">
+    <p class="intro">Rolling special dice.</p>
+
+    
+    <h2>The PMF of Cyborg Commando's d10x</h2>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.cyborg</span> <span class="kn">as</span> <span class="nn">cyborg</span>
+<span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
+
+<span class="c">## We plot the PMF bar plot</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/d10xpmf.png&#39;</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span><span class="o">.</span><span class="n">std</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</code>
+    <p>The output of the above code is:</p>
+    
+    <code><pre>Mean: 30.25
+STD: 23.8156986041
+</pre></code>
+    
+    
+    <div align='center'>
+        <img src="img/d10xpmf.png">
+    </div>
+    
+    <br>
+    
+    <h2>The PMF of a fudge die</h2>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.fudge</span> <span class="kn">as</span> <span class="nn">fudge</span>
+<span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
+
+<span class="c">## We plot the PMF bar plot</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/fudgepmf.png&#39;</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+              <span class="n">xkcd</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span><span class="o">.</span><span class="n">std</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</code>
+    <p>The output of the above code is:</p>
+    
+    <code><pre>Mean: 0.0
+STD: 0.816496580928
+</pre></code>
+    
+    
+    <div align='center'>
+        <img src="img/fudgepmf.png">
+    </div>
+    
+    <br>
+    
+    <h2>The PMF of Games Workshop's D66</h2>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.gw</span> <span class="kn">as</span> <span class="nn">gw</span>
+<span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
+
+<span class="c">## We plot the PMF bar plot</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/d66pmf.png&#39;</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+              <span class="n">xkcd</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">d66</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">d66</span><span class="o">.</span><span class="n">std</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">d66</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</code>
+    <p>The output of the above code is:</p>
+    
+    <code><pre>Mean: 38.5
+STD: 17.1634301156
+</pre></code>
+    
+    
+    <div align='center'>
+        <img src="img/d66pmf.png">
+    </div>
+    
+    <br>
+    
+
+
+       <hr />
+       <footer>
+       <p>
+       <a href=""><img src="/img/cat.png" height=32px/></a>
+       <a href=""><img src="/img/jinja2.png" height=32px/></a>
+       </p>
+       </footer>
+       </main>
+
+   </body>
+</html>
