@@ -32,7 +32,7 @@ def _plot_axes(xlabel=None, ylabel=None, title=None, figsize=None, dpi=None):
     if title:
         plt.title(title)
 
-    return ax
+    return fig, ax
 
 
 def _plot_curve_mean(x, y, mean):
@@ -67,8 +67,8 @@ def _plot_curve_std(x, y, mean, std):
 def _plot_curve(x, y, mean=None, std=None, xlabel=None, ylabel=None, mask=None,
                 title=None, figsize=None, dpi=None):
     ## Set figure and axes
-    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title, figsize=figsize,
-                    dpi=dpi)
+    fig, ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title,
+                         figsize=figsize, dpi=dpi)
 
     ## Plot the curve itself
     plt.plot(x, y)
@@ -87,6 +87,8 @@ def _plot_curve(x, y, mean=None, std=None, xlabel=None, ylabel=None, mask=None,
     ## Show standard deviation
     if mean and std:
         _plot_curve_std(x, y, mean, std)
+
+    return fig
 
 
 def _plot_xkcd(plot_func, *args, **kwargs):
@@ -114,15 +116,15 @@ def _plot_pmf(plot_func, drv, filename=None, mean=False, std=False,
         kwargs['std'] = drv.std
 
     kwargs.update(plot_kwargs)
-    plot_func(x, y, **kwargs)
+    fig = plot_func(x, y, **kwargs)
 
     ## Show
     if not filename:
-        plt.show()
+        fig.show()
 
     ## Save
     else:
-        plt.savefig(filename)
+        fig.savefig(filename, dpi=fig.dpi)
 
 
 def plot_pmf_curve(drv, filename=None, mean=False, std=False, figsize=None,
@@ -141,8 +143,8 @@ def plot_pmf_curve(drv, filename=None, mean=False, std=False, figsize=None,
 def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None,
                figsize=None, dpi=None):
     ## Set figure and axes
-    ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title, figsize=figsize,
-                    dpi=dpi)
+    fig, ax = _plot_axes(xlabel=xlabel, ylabel=ylabel, title=title,
+                         figsize=figsize, dpi=dpi)
 
     ## Plot the curve itself
     plt.bar(x, y, align='center')
@@ -152,6 +154,8 @@ def _plot_bars(x, y, xlabel=None, ylabel=None, mask=None, title=None,
         xticks = ax.get_xticks().tolist()
         new_xticks = [mask.get(xtick, '') for xtick in xticks]
         ax.set_xticklabels(new_xticks)
+
+    return fig
 
 
 def plot_pmf_bars(drv, filename=None, xkcd=False):
