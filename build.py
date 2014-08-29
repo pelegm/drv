@@ -79,6 +79,7 @@ html = template.render(**data)
 
 
 with open('index.html', 'w') as html_file:
+    print "Writing {}".format('index.html')
     html_file.write(html)
 
 
