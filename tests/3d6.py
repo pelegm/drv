@@ -49,8 +49,8 @@ import drv.plot_tools as ptl
 dice = drv.game.base.ndk(3, 6)
 
 ## Plot the PMF graph
-kwargs = dict(filename='examples/img/pmf.png',
-              mean=True, std=True, dpi=70,
-              xkcd=True)
+filename = 'examples/img/3d6pmf.png'
+kwargs = dict(filename=filename, mean=True,
+              std=True, dpi=70, xkcd=True)
 ptl.plot_pmf_curve(dice, **kwargs)
 
