@@ -34,9 +34,10 @@
 <span class="c">## We plot the PMF bar plot</span>
 <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/d10xpmf.png&#39;</span>
 <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span><span class="o">.</span><span class="n">mean</span>
-<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span><span class="o">.</span><span class="n">std</span>
-<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">d10x</span> <span class="o">=</span> <span class="n">cyborg</span><span class="o">.</span><span class="n">d10x</span>
+<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">d10x</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">d10x</span><span class="o">.</span><span class="n">std</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_bars</span><span class="p">(</span><span class="n">d10x</span><span class="p">,</span> <span class="n">d10x</span><span class="o">.</span><span class="n">pmf</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
@@ -60,9 +61,10 @@ STD: 23.8156986041
 <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/fudgepmf.png&#39;</span>
 <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
               <span class="n">xkcd</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span><span class="o">.</span><span class="n">mean</span>
-<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span><span class="o">.</span><span class="n">std</span>
-<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">fdie</span> <span class="o">=</span> <span class="n">fudge</span><span class="o">.</span><span class="n">fudge_die</span>
+<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">fdie</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">fdie</span><span class="o">.</span><span class="n">std</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_bars</span><span class="p">(</span><span class="n">fdie</span><span class="p">,</span> <span class="n">fdie</span><span class="o">.</span><span class="n">pmf</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </code>
     <p>The output of the above code is:</p>
@@ -86,9 +88,10 @@ STD: 0.816496580928
 <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/d66pmf.png&#39;</span>
 <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
               <span class="n">xkcd</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">d66</span><span class="o">.</span><span class="n">mean</span>
-<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">d66</span><span class="o">.</span><span class="n">std</span>
-<span class="n">ptl</span><span class="o">.</span><span class="n">plot_pmf_bars</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">d66</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="n">d66</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">d66</span>
+<span class="k">print</span> <span class="s">&quot;Mean:&quot;</span><span class="p">,</span> <span class="n">d66</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span> <span class="s">&quot;STD:&quot;</span><span class="p">,</span> <span class="n">d66</span><span class="o">.</span><span class="n">std</span>
+<span class="n">ptl</span><span class="o">.</span><span class="n">plot_bars</span><span class="p">(</span><span class="n">d66</span><span class="p">,</span> <span class="n">d66</span><span class="o">.</span><span class="n">pmf</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </code>
     <p>The output of the above code is:</p>

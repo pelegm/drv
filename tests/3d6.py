@@ -52,5 +52,35 @@ dice = drv.game.base.ndk(3, 6)
 filename = 'examples/img/3d6pmf.png'
 kwargs = dict(filename=filename, mean=True,
               std=True, dpi=70, xkcd=True)
-ptl.plot_pmf_curve(dice, **kwargs)
+ptl.plot_curve(dice, dice.pmf, **kwargs)
+#####
+#: Plot the CDF graph of 3d6
+#: figure::img/3d6cdf.png
+import drv.game.base
+import drv.plot_tools as ptl
+
+## Define the random variable
+dice = drv.game.base.ndk(3, 6)
+
+## Plot the CDF graph
+filename = 'examples/img/3d6cdf.png'
+kwargs = dict(filename=filename, mean=True,
+              std=True, dpi=70, xkcd=True)
+ptl.plot_curve(dice, dice.cdf, **kwargs)
+#####
+#: Plot the Log-PMF graph of 3d6
+#: figure::img/3d6logpmf.png
+import drv.game.base
+import drv.plot_tools as ptl
+
+## Define the random variable
+dice = drv.game.base.ndk(3, 6)
+
+## Plot the Log-PMF graph
+## If this is like a parabola, then the
+## distribution resembles normal...
+filename = 'examples/img/3d6logpmf.png'
+kwargs = dict(filename=filename, mean=True,
+              std=True, dpi=70, xkcd=True)
+ptl.plot_curve(dice, dice.logpmf, **kwargs)
 

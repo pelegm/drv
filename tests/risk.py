@@ -27,5 +27,5 @@ atk = risk.attack(3, 2)
 filename = 'examples/img/riskpmf.png'
 kwargs = dict(filename=filename, dpi=70,
               xkcd=True)
-ptl.plot_pmf_bars(atk, **kwargs)
+ptl.plot_bars(atk, atk.pmf, **kwargs)
 
