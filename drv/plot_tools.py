@@ -85,6 +85,8 @@ def _plot_graph(plot_func, drv, method, mean=False, std=False, filename=None,
     else:
         fig.savefig(filename, dpi=fig.dpi)
 
+    return fig
+
 
 def _format_tick(mask, tick):
     return "\n".join(tw.wrap(mask.get(tick, ''), width=10))
@@ -160,7 +162,7 @@ def plot_curve(drv, method, mean=False, std=False, **kwargs):
 
     This function accepts any plot-related kwargs.
     """
-    _plot_graph(_plot_curve, drv, method, mean=mean, std=std, **kwargs)
+    return _plot_graph(_plot_curve, drv, method, mean=mean, std=std, **kwargs)
 
 
 #####################################
@@ -193,5 +195,5 @@ def plot_bars(drv, method, **kwargs):
 
     This function accepts any plot-related kwargs.
     """
-    _plot_graph(_plot_bars, drv, method, **kwargs)
+    return _plot_graph(_plot_bars, drv, method, **kwargs)
 
