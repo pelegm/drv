@@ -1,7 +1,7 @@
 """
 .. drv.py
 
-Dice random variables; these are discrete (integer-valued) finite random
+Discrete random variables; these are discrete (integer-valued) finite random
 variables.
 
 This module provides a simple (quite thin) wrapper around the extensive

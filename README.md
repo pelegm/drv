@@ -1,8 +1,8 @@
-# dicerv
+# DRV
 
-Dice random variables in Python made easy.
+Discrete random variables in Python made easy.
 
-Check the new project webpage! Now at http://pelegm.github.io/dicerv.
+Check the new project webpage! Now at http://pelegm.github.io/drv.
 
 ## Table of Contents
 
@@ -44,5 +44,5 @@ but see *examples*.
 
 
 ### Examples
-Please check the project's webpage: http://pelegm.github.io/dicerv
+Please check the project's webpage: http://pelegm.github.io/drv
 
