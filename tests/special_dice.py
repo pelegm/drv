@@ -2,7 +2,7 @@
 #####
 #: The PMF of Cyborg Commando's d10x
 #: figure::img/d10xpmf.png
-import drv.game.cyborg as cyborg
+import drv.dice.cyborg as cyborg
 import drv.plot_tools as ptl
 
 ## We plot the PMF bar plot
@@ -15,7 +15,7 @@ ptl.plot_bars(d10x, d10x.pmf, **kwargs)
 #####
 #: The PMF of a fudge die
 #: figure::img/fudgepmf.png
-import drv.game.fudge as fudge
+import drv.dice.fudge as fudge
 import drv.plot_tools as ptl
 
 ## We plot the PMF bar plot
@@ -29,7 +29,7 @@ ptl.plot_bars(fdie, fdie.pmf, **kwargs)
 #####
 #: The PMF of Games Workshop's D66
 #: figure::img/d66pmf.png
-import drv.game.gw as gw
+import drv.dice.gw as gw
 import drv.plot_tools as ptl
 
 ## We plot the PMF bar plot

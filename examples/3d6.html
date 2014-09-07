@@ -28,11 +28,11 @@
 
     
     <h2>Basic properties of 3d6</h2>
-    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.dice.base</span>
 
 <span class="c">## We define a random variable which represents</span>
 <span class="c">## 3d6</span>
-<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">dice</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
 <span class="c">## The following prints its minumum and maximum</span>
 <span class="c">## values</span>
@@ -61,10 +61,10 @@ Median: 10.0
     <br>
     
     <h2>Probability of getting at least 13</h2>
-    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.dice.base</span>
 
 <span class="c">## Again, define the random variable</span>
-<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">dice</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
 <span class="c">## Define a &quot;hit&quot; function</span>
 <span class="n">hit</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="mi">13</span>
@@ -84,10 +84,10 @@ Median: 10.0
     <h2>Roll 3d6 a couple of times</h2>
     <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.core</span>
 <span class="n">drv</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">2014</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">drv.game.base</span>
+<span class="kn">import</span> <span class="nn">drv.dice.base</span>
 
 <span class="c">## Define the random variable and roll</span>
-<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">dice</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="k">print</span> <span class="p">[</span><span class="n">dice</span><span class="o">.</span><span class="n">roll</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
 </pre></div>
 </code>
@@ -100,11 +100,11 @@ Median: 10.0
     <br>
     
     <h2>Plot the PMF graph of 3d6</h2>
-    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.dice.base</span>
 <span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
 
 <span class="c">## Define the random variable</span>
-<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">dice</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
 <span class="c">## Plot the PMF graph</span>
 <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/3d6pmf.png&#39;</span>
@@ -123,11 +123,11 @@ Median: 10.0
     <br>
     
     <h2>Plot the CDF graph of 3d6</h2>
-    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.dice.base</span>
 <span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
 
 <span class="c">## Define the random variable</span>
-<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">dice</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
 <span class="c">## Plot the CDF graph</span>
 <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;examples/img/3d6cdf.png&#39;</span>
@@ -146,11 +146,11 @@ Median: 10.0
     <br>
     
     <h2>Plot the Log-PMF graph of 3d6</h2>
-    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.game.base</span>
+    <code><div class="highlight"><pre><span class="kn">import</span> <span class="nn">drv.dice.base</span>
 <span class="kn">import</span> <span class="nn">drv.plot_tools</span> <span class="kn">as</span> <span class="nn">ptl</span>
 
 <span class="c">## Define the random variable</span>
-<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">game</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">dice</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">dice</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ndk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
 <span class="c">## Plot the Log-PMF graph</span>
 <span class="c">## If this is like a parabola, then the</span>

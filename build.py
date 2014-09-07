@@ -1,7 +1,7 @@
 """
 .. build.py
 
-Building the GitHub page for DiceRV.
+Building the GitHub page for DRV.
 """
 
 import jinja2 as j2
@@ -52,12 +52,12 @@ template = env.get_template('index.html')
 
 data = {}
 data['author'] = "Peleg Michaeli"
-data['intro'] = "Hi. This is the github page of the DiceRV project"
-data['title'] = "DiceRV"
+data['intro'] = "Hi. This is the github page of the DRV project"
+data['title'] = "DRV"
 
 
-data['baseurl'] = '/dicerv'
-data['github_url'] = 'http://github.com/pelegm/dicerv'
+data['baseurl'] = '/drv'
+data['github_url'] = 'http://github.com/pelegm/drv'
 
 
 examples = ['3d6', 'risk', 'special_dice']
