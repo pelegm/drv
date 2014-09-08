@@ -1,7 +1,7 @@
 """
 .. drv.py
 
-Dice random variables; these are discrete (integer-valued) finite random
+Discrete random variables; these are discrete (integer-valued) finite random
 variables.
 
 This module provides a simple (quite thin) wrapper around the extensive
@@ -14,6 +14,9 @@ import scipy.stats as ss
 ## Math
 import numpy as np
 inf = np.inf
+
+## Randomization
+seed = np.random.seed
 
 ## Data containers
 import collections as col
@@ -438,16 +441,12 @@ class DiscreteRandomVariable(object):
 
     ## ----- Statistics ----- ##
 
-    def _graph(self, method):
+    def graph(self, method):
         """ Return a graph (that is, a pair of x's and y's) of a given method
         as a function of the random variable's range. """
         x = self.range
         y = [method(a) for a in x]
         return x, y
-
-    def pmf_graph(self):
-        """ Return the random variable's PMF graph. """
-        return self._graph(self.pmf)
 
     ## ----- Arithmetic ----- ##
 
