@@ -186,6 +186,9 @@ class FDRV(DRV):
         if not 0 < q <= 1:
             raise ValueError(PPF_DOMAIN)
 
+        ## TODO: This is extremely inefficient (o(n^2)) when the set of xs is
+        ## large; we should probably consider using bisect here, to make it
+        ## o(nlog(n))
         for x in self.xs:
             if self.cdf(x) >= q:
                 return x
