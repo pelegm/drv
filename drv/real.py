@@ -32,8 +32,8 @@ class RDRV(drv.core.DRV):
 
     def __nonzero__(self):
         if self.pmf(0) == 1:
-            return True
-        return False
+            return False
+        return True
 
     ## ----- Probability Properties ----- ##
 
