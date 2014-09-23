@@ -57,11 +57,8 @@ class Bernoulli(ParameteredDist, drv.integer.FIDRV):
 
     def __init__(self, p):
         self.set_params(p=p)
+        self.q = 1 - self.p
         super(Bernoulli, self).__init__(self.pstr, [0, 1], [1-p, p])
-
-    @property
-    def q(self):
-        return 1 - self.p
 
     ## ----- Arithmetic ----- ##
 
