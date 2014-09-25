@@ -21,6 +21,10 @@ def gcs(*objects):
     return None
 
 
+def slice_repr(*slices):
+    return "TODO"
+
+
 def unzip(zipped):
     """ Return a :term:`generator` reverses the work of zip/izip.
 

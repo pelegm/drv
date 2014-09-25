@@ -250,14 +250,11 @@ class TDRV(DRV):
     def __getitem__(self, key):
         if isinstance(key, slice):
             slice_attrs = []
-            if slice.start:
-                slice_attrs.append(slice.start)
-            if slice.stop:
-                slice_attrs.append(slice.stop)
-            if slice.step:
-                slice_attrs.append(slice.step)
-            name = ":".join(slice_attrs)
-            return self.subtuple(range(*slice_attrs), name)
+            slice_attrs.append(key.start)
+            slice_attrs.append(key.stop)
+            slice_attrs.append(key.step)
+            name = "{}[{}]".format(self.name, tools.slice_repr(key))
+            return self.subtuple(key, name)
         return self.drvs[key]
 
     ## ----- Probability Properties ----- ##
