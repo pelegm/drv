@@ -312,6 +312,36 @@ class TFDRV(TDRV):
 
     ## ----- Operations ----- ##
 
+    def bisect_op(self, operator):
+        n = len(self)
+
+        if n == 1:
+            return self[0]
+
+        mid = n - n / 2
+        a = self[:mid]
+        b = self[mid:]
+
+        return operator(a.bisect_op(operator), b.bisect_op(operator))
+
+    def bisect_reduce(self, function, name, klass=None, unpack=True):
+        """ Return a random variable whose values are the binary-reduced
+        application of *function* to self's values, applied binary. Assign
+        *name* to the resulted random variable, whose class is *klass* or
+        self's class.
+
+        This is sometimes a little bit faster than reduce. """
+        f_name = name.format(**self.formatter)
+        if unpack:
+            func = function
+        else:
+            func = lambda x, y: function((x, y))
+
+        red = self.bisect_op(func)
+
+        klass = klass or self.__class__
+        return klass(f_name, red.xs, red.ps)
+
     def map(self, function, name, klass=None, unpack=False):
         """ Return a random variable whose values are the application of
         *function* to self's values. Assign *name* to the resulted random
@@ -325,4 +355,21 @@ class TFDRV(TDRV):
             m_xs = [function(x) for x in xs]
         klass = klass or self.__class__
         return klass(f_name, m_xs, ps)
+
+    def reduce(self, function, name, initial=None, klass=None, unpack=True):
+        """ Return a random variable whose values are the binary-reduced
+        application of *function* to self's values, applied linearly. Assign
+        *name* to the resulted random variable, whose class is *klass* or
+        self's class. """
+        f_name = name.format(**self.formatter)
+        if unpack:
+            func = function
+        else:
+            func = lambda x, y: function((x, y))
+        if initial:
+            red = reduce(func, self, initial)
+        else:
+            red = reduce(func, self)
+        klass = klass or self.__class__
+        return klass(f_name, red.xs, red.ps)
 
