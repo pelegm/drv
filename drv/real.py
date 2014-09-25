@@ -76,6 +76,8 @@ class RDRV(drv.core.DRV):
         """ The variance of the random variable. """
         raise NotImplementedError
 
+    ## ----- Probability Methods ----- ##
+
     @abc.abstractmethod
     def cdf(self, k):
         """ Return the cumulative distribution function at *k*. """
@@ -339,8 +341,9 @@ class FRDRV(drv.core.FDRV, RDRV):
 
     def __mul__(self, other, name="({_0})*({_1})", klass=None):
         ## When multiplying by 1, do nothing
-        if other == 1:
-            return self
+        if isinstance(other, (float, int)):
+            if other == 1:
+                return self
 
         ## When multiplying by 0, this is constant 0
         if not other:
@@ -426,6 +429,7 @@ class FRDRV(drv.core.FDRV, RDRV):
 
     def __rsub__(self, other, name="({_0})-({_1})", klass=None):
         return self.binop(other, op.sub, name, reverse=True, klass=klass)
+
 
 class DegenerateRDRV(FRDRV):
     def __init__(self, k):
