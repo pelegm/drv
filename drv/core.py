@@ -283,10 +283,11 @@ class TDRV(DRV):
 
     ## ----- Operations ----- ##
 
-    def subtuple(self, indices, name):
+    def subtuple(self, indices, name, klass=None):
         """ Return the sub-tuple containing only *indices*. """
-        drvs = [self.drvs[i] for i in indices]
-        return self.__class__(drvs, name=name)
+        drvs = self.drvs[indices]
+        klass = klass or self.__class__
+        return klass(drvs, name=name)
 
 
 class TFDRV(TDRV):
