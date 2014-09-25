@@ -50,74 +50,6 @@ class ParameteredDist(object):
                 raise ValueError("Parameter '{}' not in range.".format(p))
 
 
-class Bernoulli(ParameteredDist, drv.integer.FIDRV):
-    _params = 'p',
-    _params_allowed = prob_open,
-    _scls = "Bern"
-
-    def __init__(self, p):
-        self.set_params(p=p)
-        super(Bernoulli, self).__init__(self.pstr, [0, 1], [1-p, p])
-
-    @property
-    def q(self):
-        return 1 - self.p
-
-    ## ----- Arithmetic ----- ##
-
-    def __add__(self, other):
-        ## Cast
-        if isinstance(other, (Binomial, Hypergeometric)):
-            if other.n == 1:
-                other = Bernoulli(other.p)
-
-        if isinstance(other, Bernoulli):
-            if other is not self:
-                if other.p == self.p:
-                    return Binomial(2, self.p)
-                else:
-                    ## TODO: Poisson binomial distribution
-                    pass
-
-        return super(Bernoulli, self).__add__(other)
-
-    def __and__(self, other):
-        ## Cast
-        if isinstance(other, (Binomial, Hypergeometric)):
-            if other.n == 1:
-                other = Bernoulli(other.p)
-
-        if isinstance(other, Bernoulli):
-            if other is not self:
-                return Bernoulli(self.p * other.p)
-
-        return super(Bernoulli, self).__and__(other)
-
-    def __mul__(self, other):
-        ## Cast
-        if isinstance(other, (Binomial, Hypergeometric)):
-            if other.n == 1:
-                other = Bernoulli(other.p)
-
-        if isinstance(other, Bernoulli):
-            if other is not self:
-                return Bernoulli(self.p * other.p)
-
-        return super(Bernoulli, self).__mul__(other)
-
-    def __or__(self, other):
-        ## Cast
-        if isinstance(other, (Binomial, Hypergeometric)):
-            if other.n == 1:
-                other = Bernoulli(other.p)
-
-        if isinstance(other, Bernoulli):
-            if other is not self:
-                return Bernoulli(1 - (self.q * other.q))
-
-        return super(Bernoulli, self).__or__(other)
-
-
 class Binomial(ParameteredDist, drv.integer.FIDRV):
     _params = 'n', 'p',
     _params_allowed = natural_0, prob_closed
@@ -131,23 +63,95 @@ class Binomial(ParameteredDist, drv.integer.FIDRV):
         ps = [self._pmf(k) for k in xs]
         super(Binomial, self).__init__(self.pstr, xs, ps)
 
+        self.q = 1 - self.p
+
     def _pmf(self, k):
         n, p = self.n, self.p
         return 1.0 * choose(n, k) * p ** k * (1 - p) ** (n - k)
 
+    ## ----- Probability Properties ----- ##
+
+    @property
+    def max(self):
+        return self.n
+
+    @property
+    def mean(self):
+        return self.n * self.p
+
+    @property
+    def min(self):
+        return 0
+
+    @property
+    def variance(self):
+        return self.n * self.p * self.q
+
     ## ----- Arithmetic ----- ##
 
     def __add__(self, other):
-        if isinstance(other, Bernoulli):
-            if other.p == self.p:
-                return Binomial(self.n + 1, self.p)
-
         if isinstance(other, Binomial):
             if other is not self:
                 if other.p == self.p:
                     return Binomial(self.n + other.n, self.p)
 
         return super(Binomial, self).__add__(other)
+
+
+class Bernoulli(Binomial):
+    _params = 'p',
+    _params_allowed = prob_open,
+    _scls = "Bern"
+
+    def __init__(self, p):
+        self.set_params(p=p)
+        super(Bernoulli, self).__init__(self.pstr, [0, 1], [1-p, p])
+
+        self.n = 1
+        self.q = 1 - self.p
+
+    ## ----- Arithmetic ----- ##
+
+    def __add__(self, other):
+        ## Cast
+        if isinstance(other, (Binomial, Hypergeometric)):
+            if other is not self:
+                if other.n == 1:
+                    if other.p == self.p:
+                        return Binomial(2, self.p)
+                    else:
+                        ## TODO: Poisson binomial distribution
+                        pass
+
+        return super(Bernoulli, self).__add__(other)
+
+    def __and__(self, other):
+        ## Cast
+        if isinstance(other, (Binomial, Hypergeometric)):
+            if other is not self:
+                if other.n == 1:
+                    return Bernoulli(self.p * other.p)
+
+        return super(Bernoulli, self).__and__(other)
+
+    def __mul__(self, other):
+        ## Cast
+        if isinstance(other, (Binomial, Hypergeometric)):
+            if other is not self:
+                if other.n == 1:
+                    return Bernoulli(self.p * other.p)
+
+        return super(Bernoulli, self).__mul__(other)
+
+    def __or__(self, other):
+        ## Cast
+        if isinstance(other, (Binomial, Hypergeometric)):
+            if other is not self:
+                if other.n == 1:
+                    return Bernoulli(1 - (self.q * other.q))
+
+        return super(Bernoulli, self).__or__(other)
+
 
 
 class Hypergeometric(ParameteredDist, drv.integer.FIDRV):
