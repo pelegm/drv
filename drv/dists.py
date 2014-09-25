@@ -45,9 +45,12 @@ class ParameteredDist(object):
             try:
                 i = self._params.index(p)
             except ValueError:
-                raise ValueError("Unknown parameter '{}'".format(p))
-            if not self._params_allowed[i](v):
-                raise ValueError("Parameter '{}' not in range.".format(p))
+                pass
+                # raise ValueError("Unknown parameter '{}'".format(p))
+            # if not self._params_allowed[i](v):
+            else:
+                if not self._params_allowed[i](v):
+                    raise ValueError("Parameter '{}' not in range.".format(p))
 
 
 class Binomial(ParameteredDist, drv.integer.FIDRV):
@@ -104,11 +107,7 @@ class Bernoulli(Binomial):
     _scls = "Bern"
 
     def __init__(self, p):
-        self.set_params(p=p)
-        super(Bernoulli, self).__init__(self.pstr, [0, 1], [1-p, p])
-
-        self.n = 1
-        self.q = 1 - self.p
+        super(Bernoulli, self).__init__(1, p)
 
     ## ----- Arithmetic ----- ##
 
@@ -165,6 +164,9 @@ class Hypergeometric(ParameteredDist, drv.integer.FIDRV):
         ps = [self._pmf(k) for k in xs]
         super(Hypergeometric, self).__init__(self.pstr, xs, ps)
 
+        self.p = 1.0 * self.K / self.N
+        self.q = 1 - self.p
+
     def argcheck(self, params):
         if params['K'] > params['N']:
             raise ValueError("Parameter 'K' not in range.")
@@ -177,10 +179,6 @@ class Hypergeometric(ParameteredDist, drv.integer.FIDRV):
     def _pmf(self, k):
         N, K, n = self.N, self.K, self.n
         return 1.0 * choose(K, k) * choose(N - K, n-k) / choose(N, n)
-
-    @property
-    def p(self):
-        return 1.0 * self.K / self.N
 
 
 class Rademacher(ParameteredDist, drv.integer.FIDRV):
