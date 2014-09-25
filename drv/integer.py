@@ -59,7 +59,11 @@ class FIDRV(drv.real.FRDRV, IDRV):
         """ Return a graph (that is, a pair of x's and y's) of a given method
         as a function of the random variable's range. """
         x = self.range
-        y = [method(a) for a in x]
+        try:
+            _method = getattr(self, method)
+        except TypeError:
+            _method = method
+        y = [_method(a) for a in x]
         return x, y
 
     ## ----- Operations ----- ##
