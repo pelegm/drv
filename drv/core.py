@@ -250,14 +250,11 @@ class TDRV(DRV):
     def __getitem__(self, key):
         if isinstance(key, slice):
             slice_attrs = []
-            if slice.start:
-                slice_attrs.append(slice.start)
-            if slice.stop:
-                slice_attrs.append(slice.stop)
-            if slice.step:
-                slice_attrs.append(slice.step)
-            name = ":".join(slice_attrs)
-            return self.subtuple(range(*slice_attrs), name)
+            slice_attrs.append(key.start)
+            slice_attrs.append(key.stop)
+            slice_attrs.append(key.step)
+            name = "{}[{}]".format(self.name, tools.slice_repr(key))
+            return self.subtuple(key, name)
         return self.drvs[key]
 
     ## ----- Probability Properties ----- ##
@@ -286,10 +283,11 @@ class TDRV(DRV):
 
     ## ----- Operations ----- ##
 
-    def subtuple(self, indices, name):
+    def subtuple(self, indices, name, klass=None):
         """ Return the sub-tuple containing only *indices*. """
-        drvs = [self.drvs[i] for i in indices]
-        return self.__class__(drvs, name=name)
+        drvs = self.drvs[indices]
+        klass = klass or self.__class__
+        return klass(drvs, name=name)
 
 
 class TFDRV(TDRV):
@@ -314,6 +312,36 @@ class TFDRV(TDRV):
 
     ## ----- Operations ----- ##
 
+    def bisect_op(self, operator):
+        n = len(self)
+
+        if n == 1:
+            return self[0]
+
+        mid = n - n / 2
+        a = self[:mid]
+        b = self[mid:]
+
+        return operator(a.bisect_op(operator), b.bisect_op(operator))
+
+    def bisect_reduce(self, function, name, klass=None, unpack=True):
+        """ Return a random variable whose values are the binary-reduced
+        application of *function* to self's values, applied binary. Assign
+        *name* to the resulted random variable, whose class is *klass* or
+        self's class.
+
+        This is sometimes a little bit faster than reduce. """
+        f_name = name.format(**self.formatter)
+        if unpack:
+            func = function
+        else:
+            func = lambda x, y: function((x, y))
+
+        red = self.bisect_op(func)
+
+        klass = klass or self.__class__
+        return klass(f_name, red.xs, red.ps)
+
     def map(self, function, name, klass=None, unpack=False):
         """ Return a random variable whose values are the application of
         *function* to self's values. Assign *name* to the resulted random
@@ -327,4 +355,21 @@ class TFDRV(TDRV):
             m_xs = [function(x) for x in xs]
         klass = klass or self.__class__
         return klass(f_name, m_xs, ps)
+
+    def reduce(self, function, name, initial=None, klass=None, unpack=True):
+        """ Return a random variable whose values are the binary-reduced
+        application of *function* to self's values, applied linearly. Assign
+        *name* to the resulted random variable, whose class is *klass* or
+        self's class. """
+        f_name = name.format(**self.formatter)
+        if unpack:
+            func = function
+        else:
+            func = lambda x, y: function((x, y))
+        if initial:
+            red = reduce(func, self, initial)
+        else:
+            red = reduce(func, self)
+        klass = klass or self.__class__
+        return klass(f_name, red.xs, red.ps)
 
