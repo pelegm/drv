@@ -3,15 +3,17 @@
 """
 
 ## Framework
-# import drv.core
-import drv.dice
+import drv.core
+import drv.game.base
+
+## Sugar
+POOL = drv.core.RandomVariablePool
+dk = drv.game.base.dk
 
 
 ## Fudge dice notation is according to Wikipedia
-def fudge_die():
-    die = drv.dice.dk(3) - 2
-    die.name = 'dF'
-    return die
+fudge_die = dk(3) - 2
+fudge_die.name = 'dF'
 
 
 def test(skill, target):

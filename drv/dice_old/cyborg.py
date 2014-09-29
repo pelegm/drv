@@ -7,12 +7,13 @@ mechanics.
 """
 
 ## Framework
-import drv.dice
+import drv.game.base
+
+## Sugar
+dk = drv.game.base.dk
 
 
-## This dice are used, according to Wikipedia, in Necromunda and Mordheim
-def d10x():
-    rv = drv.dice.dk(10) * drv.dice.dk(10)
-    rv.name = 'd10x'
-    return rv
+## This dice is used, according to Wikipedia, in Necromunda and Mordheim
+d10x = dk(10) * dk(10)
+d10x.name = 'd10x'
 
