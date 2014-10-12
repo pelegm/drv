@@ -59,7 +59,6 @@ class RDRV(drv.core.DRV):
         returned). """
         return self.ppf(0.5)
 
-    @abc.abstractproperty
     def min(self):
         """ The minimum of the random variable. """
         raise NotImplementedError
@@ -204,52 +203,59 @@ class FRDRV(drv.core.FDRV, RDRV):
         ## TODO: think of how to formalize this
         raise NotImplementedError
 
-    def ppf(self, q):
-        """ Return the percent point function (inverse CDF) at *q* Formally,
-        this is the infimum over all x's in the real line for which *q* is at
-        most the CDF of x. """
-        if not 0 < q <= 1:
-            raise ValueError(PPF_DOMAIN)
-
-        for x in self.xs:
-            if self.cdf(x) >= q:
-                return x
-
-        ## Just to make sure some value is returned; may be bugged in case of
-        ## rounding errors
-        return self.xs[-1]
-
     ## ----- Operations ----- ##
 
-    def unop(self, operator, name, klass=None):
+    def unop(self, operator, name, klass=None, flatten=False):
         """ Return a new discrete random variable, which is the result of
-        *operator* on *self*. """
-        tfdrv = drv.core.TFDRV([self])
-        klass = klass or FRDRV
-        return tfdrv.map(operator, name=name, klass=klass, unpack=True)
+        *operator* on *self*. This is in fact an alias for the map method. """
+        return self.map(operator, name, klass=klass, flatten=flatten)
 
-    def binop(self, other, operator, name, reverse=False, klass=None):
+    def binop(self, other, operator, name, reverse=False, klass=None,
+              flatten=False):
         """ return a new discrete random variable, which is the result of
-        *operator* on *self* and *other*. *other* may be a float, in which case
-        we treat it as a constant random variable. """
+        *operator* on *self* and *other* (or on *other* and *self*, if
+        *reverse*). *other* may be a float, in which case we treat it as a
+        constant real random variable.
+
+        If the operation is not supported, raise ValueError. """
         ## 'other' is not a random variable, we try to make it such
         if not isinstance(other, drv.core.DRV):
 
-            ## turn the integer into a constant random variable
-            if other.real == other:
-                other = DegenerateRDRV(other)
+            ## Try to turn the float into a constant random variable
+            try:
+                if other.real == other:
+                    other = DegenerateRDRV(other)
+            except AttributeError:
+                pass
 
         ## We don't know how to handle it
         if not isinstance(other, FRDRV):
-            return super(FRDRV, self).binop(other, operator, name, klass=klass)
+            return super(FRDRV, self).binop(other, operator, name, klass=klass,
+                                            flatten=flatten)
 
         ## We know how to handle it
+        ## Create the relevant product pspace
+        pspaces = set(self.pspace.pspaces + other.pspace.pspaces)
+        pspace = drv.pspace.ProductDPSpace(*pspaces)
+
+        ## Reverse if needed
         if reverse:
-            tfdrv = drv.core.TFDRV([other, self])
+            a, b = other, self
         else:
-            tfdrv = drv.core.TFDRV([self, other])
+            a, b = self, other
+
+        ## Create the new func
+        def func(*ks):
+            if len(ks) != len(pspaces):
+                raise ValueError
+            sample = dict(zip(pspace.pspaces, ks))
+            return operator(a.pfunc(sample), b.pfunc(sample))
+
         klass = klass or FRDRV
-        return tfdrv.map(operator, name=name, klass=klass, unpack=True)
+        _drv = klass(name, pspace, func)
+        if not flatten:
+            return _drv
+        return _drv.flatten()
 
     ## ----- Arithmetic ----- ##
 
