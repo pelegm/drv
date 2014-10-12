@@ -2,16 +2,16 @@
 .. real.py
 """
 
-## Abstract layer
-import abc
-
 ## Tools
 import operator as op
 import drv.tools as tools
 
 ## Framework
-import numpy as np
+import drv.pspace
 import drv.core
+
+## Math
+import numpy as np
 
 
 ## Messages
@@ -31,23 +31,21 @@ class RDRV(drv.core.DRV):
     ## ----- Data Model ----- ##
 
     def __nonzero__(self):
+        ## TODO: rethink that
         if self.pmf(0) == 1:
             return False
         return True
 
     ## ----- Probability Properties ----- ##
 
-    @abc.abstractproperty
     def entropy(self):
         """ The entropy of the random variable. """
         raise NotImplementedError
 
-    @abc.abstractproperty
     def max(self):
         """ The maximum of the random variable. """
         raise NotImplementedError
 
-    @abc.abstractproperty
     def mean(self):
         """ The mean of the random variable. """
         raise NotImplementedError
@@ -71,19 +69,16 @@ class RDRV(drv.core.DRV):
         """ The standard deviation of the random variable. """
         return self.variance ** 0.5
 
-    @abc.abstractproperty
     def variance(self):
         """ The variance of the random variable. """
         raise NotImplementedError
 
     ## ----- Probability Methods ----- ##
 
-    @abc.abstractmethod
     def cdf(self, k):
         """ Return the cumulative distribution function at *k*. """
         raise NotImplementedError
 
-    @abc.abstractmethod
     def expectation(self, function):
         """ Return the expected value of a function *function* with respect to
         the distribution of the random variable. *function* should be a
@@ -121,13 +116,11 @@ class RDRV(drv.core.DRV):
 
     ## ----- Probability Inverse Methods ----- ##
 
-    @abc.abstractmethod
     def isf(self, q):
         """ Return the inverse survival function at *q*. """
         ## TODO: think of how to formalize this
         raise NotImplementedError
 
-    @abc.abstractmethod
     def ppf(self, q):
         """ Return the percent point function (inverse CDF) at *q*. Formally,
         this is the infimum over all x's in the real line for which *q* is at
