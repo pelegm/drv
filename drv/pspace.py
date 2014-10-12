@@ -4,8 +4,13 @@
 Probability spaces.
 """
 
-import warnings
+## Tools
+import drv.tools
+
+import itertools as it
+import numpy as np
 import sympy
+import warnings
 
 
 ## Messages
@@ -93,21 +98,24 @@ class DPSpace(object):
        probability function P raise NotImplementedError for events for which
        the probability calculation is difficult
     3. The probability function P is described (by default) by the probability
-       function p which is a defined as p(x) = P({x}).
+       function p which is a defined as p(k) = P({k}).
 
     Thus, to create a :class:`DPSpace`, one only needs to provide the
     probability function p. """
+    finite = False
+
     def __init__(self, p, precision=10):
         """ Keep the probability function p, but normalize it first, using the
         given *precision*. """
         self.p = _normalize(p, precision=precision, strict=False)
+        self.pspaces = self,
 
     def P(self, event):
         """ Return the probability of *event*.
 
         It is assumed that *event* is a finite iterable of naturals. """
         ## TODO: implement infinite events
-        return sum(self.p(x) for x in event)
+        return sum(self.p(k) for k in event)
 
 
 class FDPSpace(DPSpace):
@@ -125,8 +133,12 @@ class FDPSpace(DPSpace):
     probability function p. For practical purposes, that function is passed as
     a finite iterable of values, which correspond to the probabilities of
     Omega. """
+    finite = True
+
     def __init__(self, ps):
-        self.ps = _f_normalize(ps)
+        self.ks, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
+        self.pks = [(k,) for k in self.ks]
+        self.pspaces = self,
 
     def p(self, k):
         try:
@@ -135,4 +147,20 @@ class FDPSpace(DPSpace):
             return 0
         except TypeError:
             return 0
+
+
+class ProductDPSpace(DPSpace):
+    """ A product space of (general) discrete probability spaces. """
+    def __init__(self, *pspaces):
+        self.pspaces = pspaces
+        self.finite = all(pspace.finite for pspace in pspaces)
+
+        ## If finite, should also have a list of packed ks
+        if self.finite:
+            self.pks = list(it.product(*(pspace.ks for pspace in pspaces)))
+
+    def p(self, *ks):
+        if len(ks) != len(self.pspaces):
+            return 0.
+        return np.prod([psp.p(k) for psp, k in zip(self.pspaces, ks)])
 
