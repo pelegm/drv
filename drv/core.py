@@ -95,18 +95,14 @@ class FDRV(object):
     *name* is an identifier for the random variable. *xs* are the possible
     values (categories), and *ps* are the distributions. *xs* and *ps* are
     checked for correctedness, and *ps* are normalized. """
-    def __init__(self, name, xs, ps):
-        self.pspace = pspace.FDPSpace(ps)
-        self.xs = xs
-        self._xdict = dict(enumerate(xs))
-        self.name = name
+    def __init__(self, name, pspace, func):
+        if not pspace.finite:
+            raise ValueError("The probability space must be finite.")
 
-    def func(self, k):
-        return self._xdict[k]
-
-    @property
-    def items(self):
-        return zip(self.xs, self.pspace.ps)
+        super(FDRV, self).__init__(name, pspace, func)
+        self.ps = [self.pspace.p(*k) for k in self.pspace.pks]
+        self.xs = [self.func(*k) for k in self.pspace.pks]
+        self.items = zip(self.xs, self.ps)
 
     @property
     def mode(self):
