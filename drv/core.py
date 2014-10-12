@@ -83,10 +83,10 @@ class DRV(object):
         *function* to self's values. """
         klass = klass or self.__class__
         func = lambda x: function(self.func(x))
-        drv = klass(self.pspace, func, name)
+        _drv = klass(name, self.pspace, func)
         if not flatten:
-            return drv
-        return drv.flatten()
+            return _drv
+        return _drv.flatten()
 
 
 class FDRV(object):
