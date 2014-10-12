@@ -2,9 +2,6 @@
 .. integer.py
 """
 
-## Abstract layer
-import abc
-
 ## General tools
 import drv.tools as tools
 
