@@ -4,7 +4,9 @@
 Discrete random variables - core module.
 """
 
-import pspace
+import collections as col
+import drv.tools
+import drv.pspace
 
 
 class DRV(object):
@@ -164,7 +166,7 @@ class FDRV(object):
 
     ## ----- Operations ----- ##
 
-    def binop(self, other, operator, name, klass=None):
+    def binop(self, other, operator, name, klass=None, flatten=False):
         """ return a new discrete random variable, which is the result of
         *operator* on *self* and *other*. """
         ## 'other' is not a random variable, we don't know how to handle that
@@ -173,4 +175,20 @@ class FDRV(object):
 
         ## We may need to be able to handle it
         raise NotImplementedError
+
+    def flatten(self, name=None):
+        """ Return a random variable with a new probability space whose sample
+        set is the inverse image of func. """
+        xp = col.defaultdict(float)
+        for p, x in zip(self.ps, self.xs):
+            if not p:
+                continue
+            xp[x] += p
+
+        xs, ps = drv.tools.unzip(xp.viewitems())
+
+        pspace = drv.pspace.FDPSpace(ps)
+        func = lambda k: xs[k]
+        name = name or self.name
+        return self.__class__(self.name, pspace, func)
 
