@@ -267,10 +267,6 @@ class FRDRV(drv.core.FDRV, RDRV):
         if not other:
             return self
 
-        ## When other is self, this is actually multiplying
-        if other is self:
-            return self * 2
-
         return self.binop(other, op.add, name, klass=klass)
 
     def __and__(self, other, name="({_0})&({_1})", klass=None):
@@ -348,10 +344,6 @@ class FRDRV(drv.core.FDRV, RDRV):
         if not other:
             return DegenerateRDRV(0)
 
-        ## When other is self, this is actually squaring
-        if other is self:
-            return self ** 2
-
         return self.binop(other, op.mul, name, klass=klass)
 
     def __ne__(self, other, name="({_0})!=({_1})", klass=None):
@@ -375,10 +367,7 @@ class FRDRV(drv.core.FDRV, RDRV):
         return self
 
     def __pow__(self, other, name="({_0})**({_1})", klass=None):
-        ## When other is self, we're not handling it properly yet...
-        if other is self:
-            raise NotImplementedError
-
+        ## Note that op.pow(0, 0) is 1 in Python!
         return self.binop(other, op.pow, name, klass=klass)
 
     def __sub__(self, other):
