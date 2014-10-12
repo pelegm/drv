@@ -1,5 +1,7 @@
 """
-.. drv.py
+.. core.py
+
+Core module.
 """
 
 ## Abstract layer
