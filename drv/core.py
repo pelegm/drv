@@ -16,10 +16,27 @@ class DRV(object):
     usually, but not always, the set of reals.
 
     A DRV comes with a *name*, which identifies the variable. """
-    def __init__(self, pspace, func, name):
+    def __init__(self, name, pspace, func):
+        self.name = name
         self.pspace = pspace
         self.func = func
-        self.name = name
+
+    def pfunc(self, sample):
+        """ Return the result of func on the sampled data, where sample must
+        contain all coordinates of self's probability space, but may also
+        contain coordinates of other probability spaces, which should be
+        ignored. In case not all coordinates are included in *sample*, raise
+        ``ValueError``.
+
+        *sample* is a dictionary pointing probability spaces to single samples.
+        """
+        _sample = []
+        for pspace in self.pspace.pspaces:
+            try:
+                _sample.append(sample[pspace])
+            except KeyError:
+                raise ValueError("Missing coordinates.")
+        return self.func(*_sample)
 
     ## ----- Representation ----- ##
 
