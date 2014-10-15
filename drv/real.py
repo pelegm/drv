@@ -12,6 +12,7 @@ import drv.core
 
 ## Math
 import numpy as np
+import sympy
 
 
 ## Messages
@@ -110,7 +111,7 @@ class RDRV(drv.core.DRV):
 
     def mgf(self, t):
         """ Return the moment-generating function at *t*. """
-        return self.pspace.integrate(lambda x: np.exp(t * self.func(x)))
+        return self.pspace.integrate(lambda x: sympy.exp(t * self.func(x)))
 
     def _moment_func(self, n, c=0, s=1):
         def mfunc(x, n=n, c=c, func=self.func):
