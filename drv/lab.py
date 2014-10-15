@@ -29,6 +29,11 @@ def E(rv):
     return rv.mean
 
 
+def H(rv):
+    """ Return the (natural) entropy of *rv*. """
+    return rv.entropy
+
+
 def P(event):
     """ Return the probability of *event*. *event* is simply a boolean random
     variable. """
