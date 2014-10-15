@@ -90,8 +90,43 @@ class DPSpace(object):
     from 0 to 1 to each event. The probability function P must return 0 for the
     empty set, 1 for the whole set, and have the countable additivity property.
 
-    In practice, this module considers only discrete (countable) probability
-    spaces, so for this class the following assumptions are made:
+    The following assumptions are made:
+
+    1. The sample space is some discrete countable space
+    2. The events set is the power set of Omega; however, we allow the
+       probability function P raise NotImplementedError for events for which
+       the probability calculation is difficult
+    3. The probability function P is described (by default) by the probability
+       function p which is a defined as p(k) = P({k}).
+
+    """
+    is_finite = False
+
+    def p(self, k):
+        raise NotImplementedError
+
+    def P(self, event):
+        """ Return the probability of *event*.
+
+        It is assumed that *event* is a finite iterable of elements from the
+        support. """
+        ## TODO: implement infinite events
+        return sum(self.p(k) for k in event)
+
+
+class CDPSpace(DPSpace):
+    """ A general countable discrete probability space.
+
+    A probability space, in its most general settings, is a triple (Omega,F,P),
+    in which O is a sample space (any set), F is a set of events which is a
+    sigma-algebra (closed under complement and countable unions and
+    intersections), and P is a probability function which assigns a real number
+    from 0 to 1 to each event. The probability function P must return 0 for the
+    empty set, 1 for the whole set, and have the countable additivity property.
+
+    In practice, this class considers only discrete (countable) probability
+    spaces having the naturals as their sample space, so for this class the
+    following assumptions are made:
 
     1. The sample space Omega is the set of natural numbers (including 0)
     2. The events set is the power set of Omega; however, we allow the
@@ -100,25 +135,48 @@ class DPSpace(object):
     3. The probability function P is described (by default) by the probability
        function p which is a defined as p(k) = P({k}).
 
-    Thus, to create a :class:`DPSpace`, one only needs to provide the
+    Thus, to create a :class:`CDPSpace`, one only needs to provide the
     probability function p. """
-    finite = False
-
     def __init__(self, p, precision=10):
         """ Keep the probability function p, but normalize it first, using the
         given *precision*. """
-        self.p = _normalize(p, precision=precision, strict=False)
+        self.precision = precision
+        self.p = _normalize(p, precision=self.precision, strict=False)
         self.pspaces = self,
 
-    def P(self, event):
-        """ Return the probability of *event*.
+    def integrate(self, func):
+        """ Integrate *func* with respect to the probability measure
+        represented by the probability space.
 
-        It is assumed that *event* is a finite iterable of naturals. """
-        ## TODO: implement infinite events
-        return sum(self.p(k) for k in event)
+        It is assumed that *func* is a function of natural numbers. If it is
+        not, its restriction to the naturals is taken into consideration. """
+        ## We need to return \int_{\Omega} f dp
+        ## In the countable discrete case, this is simply the following
+        ## infinite sum: \sum_{n=0}^\infty f(n)p(n)
+
+        ## We try a symbolic summation
+        n = sympy.Symbol('n', integer=True, nonnegative=True)
+        sym_sum = sympy.Sum(func(n) * self.p(n), (n, 0, sympy.oo)).doit()
+        try:
+            _sum = sym_sum.evalf(n=self.precision)
+
+        ## This occasionaly fails due to various SymPy bugs
+        ## See for example https://github.com/sympy/sympy/issues/8254
+        except TypeError:
+            raise NotImplementedError("SymPy bug #8254.")
+
+        f_sum = float(_sum)
+
+        ## This is sometimes wrong, and returns nan
+        ## See for example https://github.com/sympy/sympy/issues/8251
+        ## In the meanwhile, if this returns nan, we raise
+        if np.isnan(f_sum):
+            raise NotImplementedError("SymPy bug #8251.")
+
+        return float(_sum)
 
 
-class FDPSpace(DPSpace):
+class FDPSpace(CDPSpace):
     """ A finite (general) discrete probability space.
 
     The following assumptions are made:
@@ -133,7 +191,7 @@ class FDPSpace(DPSpace):
     probability function p. For practical purposes, that function is passed as
     a finite iterable of values, which correspond to the probabilities of
     Omega. """
-    finite = True
+    is_finite = True
 
     def __init__(self, ps):
         self.ks, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
@@ -148,15 +206,26 @@ class FDPSpace(DPSpace):
         except TypeError:
             return 0
 
+    def integrate(self, func):
+        """ Integrate *func* with respect to the probability measure
+        represented by the probability space.
+
+        It is assumed that *func* is a function of natural numbers. If it is
+        not, its restriction to the naturals is taken into consideration. """
+        ## We need to return \int_{\Omega} f dp
+        ## In the finite discrete case, this is simply the following infinite
+        ## sum: \sum_{k=0}^{n-1} f(k)p(k), where n is the length of 'ps'
+        return sum(func(k) * p for k, p in enumerate(self.ps))
+
 
 class ProductDPSpace(DPSpace):
     """ A product space of (general) discrete probability spaces. """
     def __init__(self, *pspaces):
         self.pspaces = pspaces
-        self.finite = all(pspace.finite for pspace in pspaces)
+        self.is_finite = all(pspace.is_finite for pspace in pspaces)
 
         ## If finite, should also have a list of packed ks
-        if self.finite:
+        if self.is_finite:
             self.pks = list(it.product(*(pspace.ks for pspace in pspaces)))
 
     def p(self, *ks):
