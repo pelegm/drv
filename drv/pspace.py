@@ -217,6 +217,13 @@ class FDPSpace(CDPSpace):
         except TypeError:
             return 0
 
+    @property
+    def entropy(self):
+        """ The (natural) entropy of the probability space. """
+        ## When taken from a finite sample, the entropy can be explicitly
+        ## written as H(X) = -\sum_i p(i) \log{p(i)}
+        return -sum(p * np.log(p) for p in self.ps)
+
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
         represented by the probability space.
