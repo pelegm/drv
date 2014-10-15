@@ -98,7 +98,7 @@ class FDRV(object):
     values (categories), and *ps* are the distributions. *xs* and *ps* are
     checked for correctedness, and *ps* are normalized. """
     def __init__(self, name, pspace, func):
-        if not pspace.finite:
+        if not pspace.is_finite:
             raise ValueError("The probability space must be finite.")
 
         super(FDRV, self).__init__(name, pspace, func)
