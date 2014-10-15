@@ -173,7 +173,18 @@ class CDPSpace(DPSpace):
         if np.isnan(f_sum):
             raise NotImplementedError("SymPy bug #8251.")
 
-        return float(_sum)
+        return f_sum
+
+    @property
+    def entropy(self):
+        """ The (natural) entropy of the probability space. """
+        ## We try a symbolic summation
+        n = sympy.Symbol('n', integer=True, nonnegative=True)
+        p = self.p(n)
+        sym_sum = -sympy.Sum(p * sympy.log(p), (n, 0, sympy.oo)).doit()
+        _sum = sym_sum.evalf(n=self.precision)
+        f_sum = float(_sum)
+        return f_sum
 
 
 class FDPSpace(CDPSpace):
