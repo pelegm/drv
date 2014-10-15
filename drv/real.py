@@ -38,18 +38,27 @@ class RDRV(drv.core.DRV):
 
     ## ----- Probability Properties ----- ##
 
+    @property
     def entropy(self):
-        """ The entropy of the random variable. """
-        raise NotImplementedError
+        """ The (natural) entropy of the random variable. """
+        return self.pspace.entropy
 
+    @property
+    def kurtosis(self):
+        """ The (excessive) kurtosis of the random variable. """
+        return self.standardised_moment(4) - 3
+
+    @property
     def max(self):
         """ The maximum of the random variable. """
+        ## This may be difficult to implement in the general case
         raise NotImplementedError
 
     @property
     def mean(self):
         """ The mean of the random variable. """
-        return self.pspace.integrate(self.func)
+        ## The mean is the first raw moment
+        return self.moment(1)
 
     @property
     def median(self):
@@ -60,9 +69,17 @@ class RDRV(drv.core.DRV):
         returned). """
         return self.ppf(0.5)
 
+    @property
     def min(self):
         """ The minimum of the random variable. """
+        ## This may be difficult to implement for the general case
         raise NotImplementedError
+
+    @property
+    def skewness(self):
+        """ The skewness of the random variable. """
+        ## The skewness is the third standardised moment
+        return self.standardised_moment(3)
 
     @property
     def std(self):
@@ -72,8 +89,8 @@ class RDRV(drv.core.DRV):
     @property
     def variance(self):
         """ The variance of the random variable. """
-        mean = self.mean
-        return self.pspace.integrate(lambda x: (self.func(x) - mean) ** 2)
+        ## The variance is the second central moment
+        return self.central_moment(2)
 
     ## ----- Probability Methods ----- ##
 
@@ -81,40 +98,36 @@ class RDRV(drv.core.DRV):
         """ Return the cumulative distribution function at *k*. """
         raise NotImplementedError
 
-    def expectation(self, function):
+    def central_moment(self, n):
+        """ Return the *n*'th central moment. """
+        return self.pspace.integrate(self._moment_func(n, self.mean))
+
+    def expectation_old(self, function):
         """ Return the expected value of a function *function* with respect to
         the distribution of the random variable. *function* should be a
         function of one argument. """
         raise NotImplementedError
 
-    def _dmgf(self, n=0):
-        """ Return the *n*'th derivative of the moment-generating function. """
-        ## Derivatives should be added per distribution
-        if n > 0:
-            raise NotImplementedError
-
-        def mgf(t, rv=self):
-            return (np.e ** (t * rv)).mean
-
-        return mgf
-
     def mgf(self, t):
         """ Return the moment-generating function at *t*. """
-        return self._dmgf(t)
+        return self.pspace.integrate(lambda x: np.exp(t * self.func(x)))
+
+    def _moment_func(self, n, c=0, s=1):
+        def mfunc(x, n=n, c=c, func=self.func):
+            return ((func(x) - c) / s) ** n
+        return mfunc
 
     def moment(self, n):
-        """ Return the *n*'th non-central moment of the random variable. """
-        return self._dmgf(n)(0)
-
-    def pr(self, event):
-        """ Return the probability of *event*; *event* is a boolean function of
-        the value of the random variable. This is in fact a synonym of
-        ``expectation``.  """
-        return self.expectation(event)
+        """ Return the *n*'th raw moment. """
+        return self.pspace.integrate(self._moment_func(n))
 
     def sf(self, k):
         """ Return the survival function at *k*. """
         return 1 - self.cdf(k)
+
+    def standardised_moment(self, n):
+        """ Return the *n*'th standardised moment. """
+        return self.pspace.integrate(self._moment_func(n, self.mean, self.std))
 
     ## ----- Probability Inverse Methods ----- ##
 
@@ -141,31 +154,8 @@ class RDRV(drv.core.DRV):
 
 
 class FRDRV(drv.core.FDRV, RDRV):
-    def _initialize(self, xs, ps):
-        """ Set, sort and check *xs* and *ps*, ignoring values with zero
-        probability, normalizing the probabilities. """
-        ## Check for non-empty support
-        if not xs:
-            raise ValueError(EMPTY_SUPPORT)
-
-        xs = tuple(xs)
-
-        ## Make them floats
-        f_xs = tuple(float(x) for x in xs)
-        if not f_xs == xs:
-            raise ValueError(REAL_SUPPORT)
-
-        super(FRDRV, self)._initialize(f_xs, ps)
-
-        ## Sort
-        self.xs, self.ps = tools.unzip(sorted(zip(self.xs, self.ps)))
 
     ## ----- Probability Properties ----- ##
-
-    @property
-    def entropy(self):
-        """ The (natural) entropy of the random variable. """
-        return -sum(p * np.log(p) for p in self.ps)
 
     @property
     def max(self):
@@ -173,31 +163,15 @@ class FRDRV(drv.core.FDRV, RDRV):
         return self.xs[-1]
 
     @property
-    def mean_(self):
-        """ The mean of the random variable. """
-        return sum(x * p for x, p in self.items)
-
-    @property
     def min(self):
         """ The minimum of the random variable. """
         return self.xs[0]
-
-    @property
-    def variance_(self):
-        """ The variance of the random variable. """
-        return sum(p * x ** 2 for x, p in self.items) - self.mean ** 2
 
     ## ----- Probability Methods ----- ##
 
     def cdf(self, k):
         """ Return the cumulative distribution function at *k*. """
         return sum(p for x, p in self.items if x <= k)
-
-    def expectation(self, function):
-        """ Return the expected value of a function *function* with respect to
-        the distribution of the random variable. *function* should be a
-        function of one argument. """
-        return sum(function(x) * p for x, p in self.items)
 
     ## ----- Probability Inverse Methods ----- ##
 
