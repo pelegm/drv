@@ -173,7 +173,7 @@ class FRDRV(drv.core.FDRV, RDRV):
         return self.xs[-1]
 
     @property
-    def mean(self):
+    def mean_(self):
         """ The mean of the random variable. """
         return sum(x * p for x, p in self.items)
 
@@ -183,7 +183,7 @@ class FRDRV(drv.core.FDRV, RDRV):
         return self.xs[0]
 
     @property
-    def variance(self):
+    def variance_(self):
         """ The variance of the random variable. """
         return sum(p * x ** 2 for x, p in self.items) - self.mean ** 2
 
