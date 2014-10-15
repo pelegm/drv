@@ -46,9 +46,10 @@ class RDRV(drv.core.DRV):
         """ The maximum of the random variable. """
         raise NotImplementedError
 
+    @property
     def mean(self):
         """ The mean of the random variable. """
-        raise NotImplementedError
+        return self.pspace.integrate(self.func)
 
     @property
     def median(self):
@@ -68,9 +69,11 @@ class RDRV(drv.core.DRV):
         """ The standard deviation of the random variable. """
         return self.variance ** 0.5
 
+    @property
     def variance(self):
         """ The variance of the random variable. """
-        raise NotImplementedError
+        mean = self.mean
+        return self.pspace.integrate(lambda x: (self.func(x) - mean) ** 2)
 
     ## ----- Probability Methods ----- ##
 
