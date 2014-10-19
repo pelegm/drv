@@ -44,7 +44,7 @@ def unzip(zipped):
 
     >>> list(unzip(zip(xrange(3), xrange(2, 5))))
     [(0, 1, 2), (2, 3, 4)]
-    >>> list(unzip(izip(xrange(3), xrange(2, 5))))
+    >>> list(unzip(it.izip(xrange(3), xrange(2, 5))))
     [(0, 1, 2), (2, 3, 4)]
 
     .. note:: The returned elements of the generator are always tuples. This is
