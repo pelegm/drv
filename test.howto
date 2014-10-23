@@ -1,1 +1,1 @@
-py.test --durations=10 --doctest-modules
+py.test --durations=10 --doctest-modules --ignore=setup.py
