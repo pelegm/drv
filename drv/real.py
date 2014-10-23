@@ -153,6 +153,86 @@ class RDRV(drv.core.DRV):
         """ Return the log of the survival function at *k*. """
         return np.log(self.sf(k))
 
+    ## ----- Operations ----- ##
+
+    def unop(self, operator, name, klass=None, flatten=False):
+        """ Return a new discrete random variable, which is the result of
+        *operator* on *self*. This is in fact an alias for the map method. """
+        return self.map(operator, name, klass=klass, flatten=flatten)
+
+    def binop(self, other, operator, name, reverse=False, klass=None,
+              flatten=False):
+        """ return a new discrete random variable, which is the result of
+        *operator* on *self* and *other* (or on *other* and *self*, if
+        *reverse*). *other* may be a float, in which case we treat it as a
+        constant real random variable.
+
+        If the operation is not supported, raise ValueError. """
+        ## If other is a scalar, we do a quicker unop instead
+        if isinstance(other, (int, float)):
+
+            ## Reverse if needed
+            if reverse:
+                _op = lambda x: operator(other, x)
+            else:
+                _op = lambda x: operator(x, other)
+
+            return self.unop(_op, name, klass=klass, flatten=flatten)
+
+        ## We don't know how to handle it
+        if not isinstance(other, RDRV):
+            raise NotImplementedError
+
+        ## We know how to handle it
+        ## Create the relevant product pspace
+        pspaces = set(self.pspace.pspaces + other.pspace.pspaces)
+        pspace = drv.pspace.ProductDPSpace(*pspaces)
+
+        ## Reverse if needed
+        if reverse:
+            a, b = other, self
+        else:
+            a, b = self, other
+
+        ## Create the new func
+        def func(*ks):
+            if len(ks) != len(pspaces):
+                raise ValueError
+            sample = dict(zip(pspace.pspaces, ks))
+            return operator(a.pfunc(sample), b.pfunc(sample))
+
+        klass = klass or self.__class__
+        _drv = klass(name, pspace, func)
+        if not flatten:
+            return _drv
+        return _drv.flatten()
+
+    ## ----- Arithmetic ----- ##
+
+    def __abs__(self, name="|{0}|", klass=None):
+        return self.unop(abs, name, klass=klass)
+
+    def __add__(self, other):
+        return self.add(other, "({0})+({1})".format(self, other))
+
+    def add(self, other, name, klass=None):
+        ## When adding 0, do nothing
+        ## TODO: rethink
+        if not other:
+            return self
+
+        return self.binop(other, op.add, name, klass=klass)
+
+    def __le__(self, other, name="({0})<=({1})", klass=None):
+        ## When other is self, this is constant True
+        if other is self:
+            return degenerate_rdrv(1)
+
+        return self.binop(other, op.le, name, klass=klass)
+
+    def __neg__(self, name="-({0})"):
+        return self.unop(op.neg, name)
+
 
 class FRDRV(drv.core.FDRV, RDRV):
 
@@ -183,136 +263,68 @@ class FRDRV(drv.core.FDRV, RDRV):
 
     ## ----- Operations ----- ##
 
-    def unop(self, operator, name, klass=None, flatten=False):
-        """ Return a new discrete random variable, which is the result of
-        *operator* on *self*. This is in fact an alias for the map method. """
-        return self.map(operator, name, klass=klass, flatten=flatten)
-
-    def binop(self, other, operator, name, reverse=False, klass=None,
-              flatten=False):
-        """ return a new discrete random variable, which is the result of
-        *operator* on *self* and *other* (or on *other* and *self*, if
-        *reverse*). *other* may be a float, in which case we treat it as a
-        constant real random variable.
-
-        If the operation is not supported, raise ValueError. """
-        ## 'other' is not a random variable, we try to make it such
-        if not isinstance(other, drv.core.DRV):
-
-            ## Try to turn the float into a constant random variable
-            try:
-                if other.real == other:
-                    other = DegenerateRDRV(other)
-            except AttributeError:
-                pass
-
-        ## We don't know how to handle it
-        if not isinstance(other, FRDRV):
-            return super(FRDRV, self).binop(other, operator, name, klass=klass,
-                                            flatten=flatten)
-
-        ## We know how to handle it
-        ## Create the relevant product pspace
-        pspaces = set(self.pspace.pspaces + other.pspace.pspaces)
-        pspace = drv.pspace.ProductDPSpace(*pspaces)
-
-        ## Reverse if needed
-        if reverse:
-            a, b = other, self
-        else:
-            a, b = self, other
-
-        ## Create the new func
-        def func(*ks):
-            if len(ks) != len(pspaces):
-                raise ValueError
-            sample = dict(zip(pspace.pspaces, ks))
-            return operator(a.pfunc(sample), b.pfunc(sample))
-
-        klass = klass or FRDRV
-        _drv = klass(name, pspace, func)
-        if not flatten:
-            return _drv
-        return _drv.flatten()
 
     ## ----- Arithmetic ----- ##
 
-    def __abs__(self, name="|{_0}|", klass=None):
-        return self.unop(abs, name, klass=klass)
-
-    def __add__(self, other, name="({_0})+({_1})", klass=None):
-        ## When adding 0, do nothing
-        if not other:
-            return self
-
-        return self.binop(other, op.add, name, klass=klass)
-
-    def __and__(self, other, name="({_0})&({_1})", klass=None):
+    def __and__(self, other, name="({0})&({1})", klass=None):
         ## When other is self, this is actually doing nothing
         if other is self:
             return self
 
         return self.binop(other, min, name, klass=klass)
 
-    def __div__(self, other, name="({_0})//(_{1})", klass=None):
+    def __div__(self, other, name="({0})//(_{1})", klass=None):
         ## When other is self, this is constant 1, unless self may be zero
         if other is self:
             if self.pmf(0) > 0:
                 raise ZeroDivisionError
-            return DegenerateRDRV(1)
+            return degenerate_rdrv(1)
 
         return self.binop(other, op.truediv, name, klass=klass)
 
-    def __eq__(self, other, name="({_0})=({_1})", klass=None):
+    def __eq__(self, other, name="({0})=({1})", klass=None):
         ## When other is self, this is constant True
         if other is self:
-            return DegenerateRDRV(1)
+            return degenerate_rdrv(1)
 
         return self.binop(other, op.eq, name, klass=klass)
 
-    def __floordiv__(self, other, name="({_0})//(_{1})", klass=None):
+    def __floordiv__(self, other, name="({0})//(_{1})", klass=None):
         ## When other is self, this is constant 1
         if other is self:
-            return DegenerateRDRV(1)
+            return degenerate_rdrv(1)
 
         return self.binop(other, op.floordiv, name, klass=klass)
 
-    def __ge__(self, other, name="({_0})>=({_1})", klass=None):
+    def __ge__(self, other, name="({0})>=({1})", klass=None):
         ## When other is self, this is constant True
         if other is self:
-            return DegenerateRDRV(1)
+            return degenerate_rdrv(1)
 
         return self.binop(other, op.ge, name, klass=klass)
 
-    def __gt__(self, other, name="({_0})>({_1})", klass=None):
+    def __gt__(self, other, name="({0})>({1})", klass=None):
         ## When other is self, this is constant False
         if other is self:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
         return self.binop(other, op.gt, name, klass=klass)
 
-    def __le__(self, other, name="({_0})<=({_1})", klass=None):
-        ## When other is self, this is constant True
-        if other is self:
-            return DegenerateRDRV(1)
-
-        return self.binop(other, op.le, name, klass=klass)
-
-    def __lt__(self, other, name="({_0})<({_1})", klass=None):
+    def __lt__(self, other, name="({0})<({1})", klass=None):
         ## When other is self, this is constant False
         if other is self:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
         return self.binop(other, op.lt, name, klass=klass)
 
-    def __mod__(self, other, name="({_0})%(_{1})", klass=None):
+    def __mod__(self, other, name="({0})%(_{1})", klass=None):
         ## When other is self, this is constant 0
         if other is self:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
         return self.binop(other, op.mod, name, klass=klass)
 
-    def __mul__(self, other, name="({_0})*({_1})", klass=None):
+    def __mul__(self, other, name="({0})*({1})", klass=None):
         ## When multiplying by 1, do nothing
         if isinstance(other, (float, int)):
             if other == 1:
@@ -320,21 +332,18 @@ class FRDRV(drv.core.FDRV, RDRV):
 
         ## When multiplying by 0, this is constant 0
         if not other:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
         return self.binop(other, op.mul, name, klass=klass)
 
-    def __ne__(self, other, name="({_0})!=({_1})", klass=None):
+    def __ne__(self, other, name="({0})!=({1})", klass=None):
         ## When other is self, this is constant False
         if other is self:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
         return self.binop(other, op.ne, name, klass=klass)
 
-    def __neg__(self, name="-({_0})"):
-        return self.unop(op.neg, name)
-
-    def __or__(self, other, name="({_0})|({_1})", klass=None):
+    def __or__(self, other, name="({0})|({1})", klass=None):
         ## When other is self, this is actually doing nothing
         if other is self:
             return self
@@ -344,60 +353,66 @@ class FRDRV(drv.core.FDRV, RDRV):
     def __pos__(self):
         return self
 
-    def __pow__(self, other, name="({_0})**({_1})", klass=None):
+    def __pow__(self, other, name="({0})**({1})", klass=None):
         ## Note that op.pow(0, 0) is 1 in Python!
         return self.binop(other, op.pow, name, klass=klass)
 
     def __sub__(self, other):
         ## When other is self, this is constant 0
         if other is self:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
-        return self.binop(other, op.sub, "({_0})-({_1})")
+        return self.binop(other, op.sub, "({0})-({1})")
 
     __truediv__ = __div__
 
     def compare(self, other):
         ## When other is self, this is constant 0
         if other is self:
-            return DegenerateRDRV(0)
+            return degenerate_rdrv(0)
 
-        return self.binop(other, cmp, "({_0})<>({_1})")
+        return self.binop(other, cmp, "({0})<>({1})")
 
     ## ----- Reverse Arithmetic ----- ##
 
-    def __radd__(self, other, name="({_0})+({_1})", klass=None):
+    def __radd__(self, other, name="({0})+({1})", klass=None):
         ## When adding 0, do nothing
         if other == 0:
             return self
 
         return self.binop(other, op.add, name, reverse=True, klass=klass)
 
-    def __rand__(self, other, name="({_0})&({_1})", klass=None):
+    def __rand__(self, other, name="({0})&({1})", klass=None):
         return self.binop(other, min, name, reverse=True, klass=klass)
 
-    def __rmul__(self, other, name="({_0})*({_1})", klass=None):
+    def __rmul__(self, other, name="({0})*({1})", klass=None):
         ## When multiplying by 1, do nothing
         if other == 1:
             return self
 
         return self.binop(other, op.mul, name, reverse=True, klass=klass)
 
-    def __ror__(self, other, name="({_0})|({_1})", klass=None):
+    def __ror__(self, other, name="({0})|({1})", klass=None):
         return self.binop(other, max, name, reverse=True, klass=klass)
 
-    def __rpow__(self, other, name="({_0})**({_1})", klass=None):
+    def __rpow__(self, other, name="({0})**({1})", klass=None):
         ## When other is self, we're not handling it properly yet...
         if other is self:
             raise NotImplementedError
 
         return self.binop(other, op.pow, name, reverse=True, klass=klass)
 
-    def __rsub__(self, other, name="({_0})-({_1})", klass=None):
+    def __rsub__(self, other, name="({0})-({1})", klass=None):
         return self.binop(other, op.sub, name, reverse=True, klass=klass)
 
 
 class DegenerateRDRV(FRDRV):
-    def __init__(self, k):
-        super(DegenerateRDRV, self).__init__(str(k), [k], [1])
+    """ A degenerate RDRV is a finite RDRV which supports a single value. """
+
+
+def degenerate_rdrv(value):
+    """ Return a :class:`DegenerateRDRV` which supports *value*. """
+    pspace = drv.pspace.DegeneratePSpace()
+    func = lambda x: float(value)
+    return DegenerateRDRV(str(value), pspace, func)
 
