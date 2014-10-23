@@ -236,6 +236,15 @@ class FDPSpace(CDPSpace):
         return sum(func(k) * p for k, p in enumerate(self.ps))
 
 
+class DegeneratePSpace(FDPSpace):
+    """ A degenerate probability space, which supports the value 0 only. """
+    def __init__(self):
+        super(DegeneratePSpace, self).__init__([1.0])
+
+    def p(self, k):
+        return 1.0 if k == 0 else 0.0
+
+
 class ProductDPSpace(DPSpace):
     """ A product space of (general) discrete probability spaces. """
     def __init__(self, *pspaces):
