@@ -17,6 +17,12 @@ def equal(a, b, p=8):
     return abs(a - b) < 10 ** (-p)
 
 
+def surely(event, p=8):
+    """ Verify that *event* occurs with probability 1, up to precision *p*). If
+    *event* is not really an event indicator, this may fail. """
+    return equal(event.mean, 1.0)
+
+
 ####################################
 ## ----- Testing Data Model ----- ##
 ####################################
@@ -137,6 +143,15 @@ def test_moment():
 ####################################
 ## ----- Testing Arithmetic ----- ##
 ####################################
+
+def test_abs_properties():
+    ## Infinite
+    p = lambda n: 1. / (n + 1) ** 2
+    cp = drv.pspace.CDPSpace(p)
+    r = drv.real.RDRV('r', cp, lambda x: x ** 3 - 15 * x)
+    abs_r = abs(r)
+    assert surely(-abs_r <= r)
+    assert surely(r <= abs_r)
 
 def test_linearity_of_expectation():
     ## Infinite + Infinite
