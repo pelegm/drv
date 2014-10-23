@@ -75,6 +75,16 @@ class DRV(object):
 
     ## ----- Operations ----- ##
 
+    def binop(self, other, operator, name, klass=None, flatten=False):
+        """ return a new discrete random variable, which is the result of
+        *operator* on *self* and *other*. """
+        ## 'other' is not a random variable, we don't know how to handle that
+        if not isinstance(other, DRV):
+            return NotImplemented
+
+        ## We may need to be able to handle it
+        raise NotImplementedError
+
     def flatten(self):
         """ Return a random variable with a new probability space whose sample
         set is the inverse image of func. """
@@ -165,16 +175,6 @@ class FDRV(object):
         return np.log(self.pmf(k))
 
     ## ----- Operations ----- ##
-
-    def binop(self, other, operator, name, klass=None, flatten=False):
-        """ return a new discrete random variable, which is the result of
-        *operator* on *self* and *other*. """
-        ## 'other' is not a random variable, we don't know how to handle that
-        if not isinstance(other, DRV):
-            return NotImplemented
-
-        ## We may need to be able to handle it
-        raise NotImplementedError
 
     def flatten(self, name=None):
         """ Return a random variable with a new probability space whose sample
