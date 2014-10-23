@@ -28,24 +28,6 @@ class FIDRV(drv.real.FRDRV, IDRV):
     *name* is an identifier for the random variable. *xs* are the possible
     values (categories), and *ps* are the distributions. *xs* and *ps* are
     checked for correctedness, and *ps* are normalized. """
-    def _initialize(self, xs, ps):
-        """ Set, sort and check *xs* and *ps*, ignoring values with zero
-        probability, normalizing the probabilities. """
-        ## Check for non-empty support
-        if not xs:
-            raise ValueError(EMPTY_SUPPORT)
-
-        xs = tuple(xs)
-
-        ## Make them integers
-        i_xs = tuple(int(x) for x in xs)
-        if not i_xs == xs:
-            raise ValueError(INT_SUPPORT)
-
-        super(FIDRV, self)._initialize(i_xs, ps)
-
-        ## Make them integers again
-        self.xs = [int(x) for x in self.xs]
 
     @property
     def range(self):
@@ -64,12 +46,6 @@ class FIDRV(drv.real.FRDRV, IDRV):
         return x, y
 
     ## ----- Operations ----- ##
-
-    def unop(self, operator, name, klass=None):
-        """ Return a new discrete random variable, which is the result of
-        *operator* on *self*. """
-        klass = klass or FIDRV
-        return super(FIDRV, self).unop(operator, name, klass=klass)
 
     def binop(self, other, operator, name, reverse=False, klass=None):
         """ return a new discrete random variable, which is the result of
