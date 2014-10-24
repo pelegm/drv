@@ -27,8 +27,6 @@ def surely(event, p=8):
 ## ----- Testing Data Model ----- ##
 ####################################
 
-## TODO: test __nonzero__, or rather cancel it
-
 
 ################################################
 ## ----- Testing Probability Properties ----- ##

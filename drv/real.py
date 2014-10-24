@@ -29,14 +29,6 @@ class RDRV(drv.rv.DRV):
 
     *name* is an identifier for the random variable. """
 
-    ## ----- Data Model ----- ##
-
-    def __nonzero__(self):
-        ## TODO: rethink that
-        if self.pmf(0) == 1:
-            return False
-        return True
-
     ## ----- Probability Properties ----- ##
 
     @property
@@ -328,10 +320,6 @@ class RDRV(drv.rv.DRV):
         return self.mod(other, "({0})%({1})".format(self, other))
 
     def mul(self, other, name, klass=None):
-        ## When multiplying by 0, this is constant 0
-        if not other:
-            return degenerate_rdrv(0)
-
         return self.binop(other, op.mul, name, klass=klass)
 
     def __mul__(self, other):
