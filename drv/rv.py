@@ -9,6 +9,10 @@ import drv.tools
 import drv.pspace
 
 
+## Messages
+PMF_GENERAL = "PMF is not implemented for general random variables."
+
+
 class DRV(object):
     """ A general Discrete Random Variable. Treated as categorical. May have
     finite or infinite support.
@@ -71,7 +75,9 @@ class DRV(object):
 
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
-        raise NotImplementedError
+        ## In general, this is not implemented. However, some infinite random
+        ## variables may implement this 
+        raise NotImplementedError(PMF_GENERAL)
 
     ## ----- Operations ----- ##
 
