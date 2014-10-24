@@ -150,9 +150,10 @@ class FDRV(object):
         except ValueError:
             raise ValueError("Category '{}' is not supported.".format(k))
 
-    def pmf(self, *k):
-        """ Return the probability mass function at *k*. """
-        return self.pspace.p(*k)
+    def pmf(self, x):
+        """ Return the probability mass function at *x*. """
+        return sum(self.pspace.p(*ks) for ks in self.pspace.pks
+                   if self.func(*ks) == x)
 
     ## ----- Probability Inverse Methods ----- ##
 
