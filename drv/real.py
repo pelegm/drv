@@ -209,11 +209,11 @@ class RDRV(drv.core.DRV):
 
     ## ----- Arithmetic ----- ##
 
-    def __abs__(self, name="|{0}|", klass=None):
-        return self.unop(abs, name, klass=klass)
+    def abs(self, name, klass=None):
+        return self.unop(op.abs, name, klass=klass)
 
-    def __add__(self, other):
-        return self.add(other, "({0})+({1})".format(self, other))
+    def __abs__(self, name="|{0}|", klass=None):
+        return self.abs("|{0}|".format(self))
 
     def add(self, other, name, klass=None):
         ## When adding 0, do nothing
@@ -223,15 +223,167 @@ class RDRV(drv.core.DRV):
 
         return self.binop(other, op.add, name, klass=klass)
 
-    def __le__(self, other, name="({0})<=({1})", klass=None):
+    def __add__(self, other):
+        return self.add(other, "({0})+({1})".format(self, other))
+
+    def and_(self, other, name, klass=None):
+        ## When other is self, this is actually doing nothing
+        if other is self:
+            return self
+
+        return self.binop(other, min, name, klass=klass)
+
+    def __and__(self, other, name):
+        return self.and_(other, "({0})&({1})".format(self, other))
+
+    def compare(self, other, name, klass=None):
+        ## When other is self, this is constant 0
+        if other is self:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, cmp, name, klass=klass)
+
+    def div(self, other, name, klass=None):
+        ## When other is self, this is constant 1, unless self may be zero
+        if other is self:
+            if self.pmf(0) > 0:
+                raise ZeroDivisionError
+            return degenerate_rdrv(1)
+
+        return self.binop(other, op.truediv, name, klass=klass)
+
+    def __div__(self, other):
+        return self.div(other, "({0})/({1})".format(self, other))
+
+    def eq(self, other, name, klass=None):
+        ## When other is self, this is constant True
+        if other is self:
+            return degenerate_rdrv(1)
+
+        return self.binop(other, op.eq, name, klass=klass)
+
+    def __eq__(self, other):
+        return self.eq(other, "({0})=({1})".format(self, other))
+
+    def floordiv(self, other, name, klass=None):
+        ## When other is self, this is constant 1, unless self may be zero
+        if other is self:
+            if self.pmf(0) > 0:
+                raise ZeroDivisionError
+            return degenerate_rdrv(1)
+
+        return self.binop(other, op.floordiv, name, klass=klass)
+
+    def __floordiv__(self, other):
+        return self.floordiv(other, "({0})//({1})".format(self, other))
+
+    def ge(self, other, name, klass=None):
+        ## When other is self, this is constant True
+        if other is self:
+            return degenerate_rdrv(1)
+
+        return self.binop(other, op.ge, name, klass=klass)
+
+    def __ge__(self, other, name):
+        return self.ge(other, "({0})>=({1})".format(self, other))
+
+    def gt(self, other, name, klass=None):
+        ## When other is self, this is constant False
+        if other is self:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, op.gt, name, klass=klass)
+
+    def __gt__(self, other):
+        return self.gt(other, "({0})>({1})".format(self, other))
+
+    def le(self, other, name, klass=None):
         ## When other is self, this is constant True
         if other is self:
             return degenerate_rdrv(1)
 
         return self.binop(other, op.le, name, klass=klass)
 
-    def __neg__(self, name="-({0})"):
-        return self.unop(op.neg, name)
+    def __le__(self, other):
+        return self.le(other, "({0})<=({1})".format(self, other))
+
+    def lt(self, other, name, klass=None):
+        ## When other is self, this is constant False
+        if other is self:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, op.lt, name, klass=klass)
+
+    def __lt__(self, other):
+        return self.lt(other, "({0})<({1})".format(self, other))
+
+    def mod(self, other, name, klass=None):
+        ## When other is self, this is constant 0
+        if other is self:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, op.mod, name, klass=klass)
+
+    def __mod__(self, other):
+        return self.mod(other, "({0})%({1})".format(self, other))
+
+    def mul(self, other, name, klass=None):
+        ## When multiplying by 0, this is constant 0
+        if not other:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, op.mul, name, klass=klass)
+
+    def __mul__(self, other):
+        return self.mul(other, "({0})*({1})".format(self, other))
+
+    def ne(self, other, name, klass=None):
+        ## When other is self, this is constant False
+        if other is self:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, op.ne, name, klass=klass)
+
+    def __ne__(self, other):
+        return self.ne(other, "({0})!=({1})".format(self, other))
+
+    def neg(self, name, klass=None):
+        return self.unop(op.neg, name, klass=klass)
+
+    def __neg__(self):
+        return self.neg("-({0})")
+
+    def or_(self, other, name, klass=None):
+        ## When other is self, this is actually doing nothing
+        if other is self:
+            return self
+
+        return self.binop(other, max, name, klass=klass)
+
+    def __or__(self, other):
+        return self.or_(other, "({0})|({1})".format(self, other))
+
+    def __pos__(self):
+        return self
+
+    def pow(self, other, name, klass=None):
+        ## Note that op.pow(0, 0) is 1 in Python! (and in sympy)
+        return self.binop(other, op.pow, name, klass=klass)
+
+    def __pow__(self, other):
+        return self.pow(other, "({0})**({1})".format(self, other))
+
+    def sub(self, other, name, klass=None):
+        ## When other is self, this is constant 0
+        if other is self:
+            return degenerate_rdrv(0)
+
+        return self.binop(other, op.sub, name, klass=klass)
+
+    def __sub__(self, other):
+        return self.sub(other, "({0})-({1})".format(self, other))
+
+    __truediv__ = __div__
 
 
 class FRDRV(drv.core.FDRV, RDRV):
@@ -260,118 +412,6 @@ class FRDRV(drv.core.FDRV, RDRV):
         """ Return the inverse survival function at *q*. """
         ## TODO: think of how to formalize this
         raise NotImplementedError
-
-    ## ----- Operations ----- ##
-
-
-    ## ----- Arithmetic ----- ##
-
-    def __and__(self, other, name="({0})&({1})", klass=None):
-        ## When other is self, this is actually doing nothing
-        if other is self:
-            return self
-
-        return self.binop(other, min, name, klass=klass)
-
-    def __div__(self, other, name="({0})//(_{1})", klass=None):
-        ## When other is self, this is constant 1, unless self may be zero
-        if other is self:
-            if self.pmf(0) > 0:
-                raise ZeroDivisionError
-            return degenerate_rdrv(1)
-
-        return self.binop(other, op.truediv, name, klass=klass)
-
-    def __eq__(self, other, name="({0})=({1})", klass=None):
-        ## When other is self, this is constant True
-        if other is self:
-            return degenerate_rdrv(1)
-
-        return self.binop(other, op.eq, name, klass=klass)
-
-    def __floordiv__(self, other, name="({0})//(_{1})", klass=None):
-        ## When other is self, this is constant 1
-        if other is self:
-            return degenerate_rdrv(1)
-
-        return self.binop(other, op.floordiv, name, klass=klass)
-
-    def __ge__(self, other, name="({0})>=({1})", klass=None):
-        ## When other is self, this is constant True
-        if other is self:
-            return degenerate_rdrv(1)
-
-        return self.binop(other, op.ge, name, klass=klass)
-
-    def __gt__(self, other, name="({0})>({1})", klass=None):
-        ## When other is self, this is constant False
-        if other is self:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, op.gt, name, klass=klass)
-
-    def __lt__(self, other, name="({0})<({1})", klass=None):
-        ## When other is self, this is constant False
-        if other is self:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, op.lt, name, klass=klass)
-
-    def __mod__(self, other, name="({0})%(_{1})", klass=None):
-        ## When other is self, this is constant 0
-        if other is self:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, op.mod, name, klass=klass)
-
-    def __mul__(self, other, name="({0})*({1})", klass=None):
-        ## When multiplying by 1, do nothing
-        if isinstance(other, (float, int)):
-            if other == 1:
-                return self
-
-        ## When multiplying by 0, this is constant 0
-        if not other:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, op.mul, name, klass=klass)
-
-    def __ne__(self, other, name="({0})!=({1})", klass=None):
-        ## When other is self, this is constant False
-        if other is self:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, op.ne, name, klass=klass)
-
-    def __or__(self, other, name="({0})|({1})", klass=None):
-        ## When other is self, this is actually doing nothing
-        if other is self:
-            return self
-
-        return self.binop(other, max, name, klass=klass)
-
-    def __pos__(self):
-        return self
-
-    def __pow__(self, other, name="({0})**({1})", klass=None):
-        ## Note that op.pow(0, 0) is 1 in Python!
-        return self.binop(other, op.pow, name, klass=klass)
-
-    def __sub__(self, other):
-        ## When other is self, this is constant 0
-        if other is self:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, op.sub, "({0})-({1})")
-
-    __truediv__ = __div__
-
-    def compare(self, other):
-        ## When other is self, this is constant 0
-        if other is self:
-            return degenerate_rdrv(0)
-
-        return self.binop(other, cmp, "({0})<>({1})")
 
     ## ----- Reverse Arithmetic ----- ##
 
