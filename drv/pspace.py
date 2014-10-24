@@ -18,6 +18,7 @@ INF_PROB = "Cannot instantiate PSpace with diverging probability."
 NEG_PROB = "Cannot instantiate PSpace with negative probability."
 NIE_PROB = "Could not determine if p is nonnegative."
 ZERO_PROB = "Cannot instantiate PSPace with zero-sum probabilities."
+INTEGRATE_GENERAL = "Cannot integrate a general PSpace."
 
 
 ## Tools
@@ -112,6 +113,11 @@ class DPSpace(object):
         support. """
         ## TODO: implement infinite events
         return sum(self.p(k) for k in event)
+
+    def integrate(self, func):
+        """ Integrate *func* with respect to the probability measure
+        represented by the probability space. """
+        raise NotImplementedError(INTEGRATE_GENERAL)
 
 
 class CDPSpace(DPSpace):
@@ -231,7 +237,7 @@ class FDPSpace(CDPSpace):
         It is assumed that *func* is a function of natural numbers. If it is
         not, its restriction to the naturals is taken into consideration. """
         ## We need to return \int_{\Omega} f dp
-        ## In the finite discrete case, this is simply the following infinite
+        ## In the finite discrete case, this is simply the following finite
         ## sum: \sum_{k=0}^{n-1} f(k)p(k), where n is the length of 'ps'
         return sum(func(k) * p for k, p in enumerate(self.ps))
 
@@ -259,4 +265,13 @@ class ProductDPSpace(DPSpace):
         if len(ks) != len(self.pspaces):
             return 0.
         return np.prod([psp.p(k) for psp, k in zip(self.pspaces, ks)])
+
+    def integrate(self, func):
+        """ Integrate *func* with respect to the probability measure
+        represented by the probability space. """
+        if not self.is_finite:
+            raise NotImplementedError
+
+        ## If the product pspace is finite, we integrate normally
+        return sum(func(*ks) * self.p(*ks) for ks in self.pks)
 
