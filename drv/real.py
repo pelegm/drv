@@ -8,7 +8,7 @@ import drv.tools as tools
 
 ## Framework
 import drv.pspace
-import drv.core
+import drv.rv
 
 ## Math
 import numpy as np
@@ -23,7 +23,7 @@ PPF_DOMAIN = "A PPF is defined on (0,1] only."
 inf = float('inf')
 
 
-class RDRV(drv.core.DRV):
+class RDRV(drv.rv.DRV):
     """ A real-valued Discrete Random Variable. May have finite or infinite
     support.
 
@@ -386,7 +386,7 @@ class RDRV(drv.core.DRV):
     __truediv__ = __div__
 
 
-class FRDRV(drv.core.FDRV, RDRV):
+class FRDRV(drv.rv.FDRV, RDRV):
 
     ## ----- Probability Properties ----- ##
 
