@@ -118,8 +118,8 @@ class FDRV(object):
             raise ValueError("The probability space must be finite.")
 
         super(FDRV, self).__init__(name, pspace, func)
-        self.ps = [self.pspace.p(*k) for k in self.pspace.pks]
-        self.xs = [self.func(*k) for k in self.pspace.pks]
+        self.ps = [self.pspace.p(*w) for w in self.pspace.Omega]
+        self.xs = [self.func(*w) for w in self.pspace.Omega]
         self.items = zip(self.xs, self.ps)
 
     @property

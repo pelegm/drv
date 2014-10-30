@@ -103,6 +103,10 @@ class DPSpace(object):
     """
     is_finite = False
 
+    @property
+    def Omega(self):
+        raise NotImplementedError
+
     def p(self, k):
         raise NotImplementedError
 
@@ -211,9 +215,12 @@ class FDPSpace(CDPSpace):
     is_finite = True
 
     def __init__(self, ps):
-        self.ks, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
-        self.pks = [(k,) for k in self.ks]
+        self._Omega, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
         self.pspaces = self,
+
+    @property
+    def Omega(self):
+        return set((w,) for w in self._Omega)
 
     def p(self, k):
         try:
@@ -257,9 +264,10 @@ class ProductDPSpace(DPSpace):
         self.pspaces = pspaces
         self.is_finite = all(pspace.is_finite for pspace in pspaces)
 
-        ## If finite, should also have a list of packed ks
-        if self.is_finite:
-            self.pks = list(it.product(*(pspace.ks for pspace in pspaces)))
+    @property
+    def Omega(self):
+        omegas = (psp.Omega for psp in self.pspaces)
+        return {sum(wt, ()) for wt in it.product(*omegas)}
 
     def p(self, *ks):
         if len(ks) != len(self.pspaces):
@@ -273,5 +281,5 @@ class ProductDPSpace(DPSpace):
             raise NotImplementedError
 
         ## If the product pspace is finite, we integrate normally
-        return sum(func(*ks) * self.p(*ks) for ks in self.pks)
+        return sum(func(*w) * self.p(*w) for w in self.Omega)
 
