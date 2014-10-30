@@ -107,6 +107,10 @@ class DPSpace(object):
     def Omega(self):
         raise NotImplementedError
 
+    @property
+    def Omega_iter(self):
+        return iter(self.Omega)
+
     def p(self, k):
         raise NotImplementedError
 
