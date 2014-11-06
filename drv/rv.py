@@ -73,11 +73,15 @@ class DRV(object):
 
     ## ----- Probability Methods ----- ##
 
+    def indicator(self, k):
+        """ Return the indicator function at X=*k*. """
+        def ind(w, k=k, func=self.func):
+            return func(w) == k
+        return ind
+
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
-        ## In general, this is not implemented. However, some infinite random
-        ## variables may implement this 
-        raise NotImplementedError(PMF_GENERAL)
+        return self.pspace.integrate(self.indicator(k))
 
     ## ----- Operations ----- ##
 
@@ -107,7 +111,7 @@ class DRV(object):
         return _drv.flatten()
 
 
-class FDRV(object):
+class FDRV(DRV):
     """ A finite (general) Discrete Random Variable. Treated as categorical.
 
     *name* is an identifier for the random variable. *xs* are the possible
@@ -149,11 +153,6 @@ class FDRV(object):
             return self._cdf(self.xs.index(k))
         except ValueError:
             raise ValueError("Category '{}' is not supported.".format(k))
-
-    def pmf(self, x):
-        """ Return the probability mass function at *x*. """
-        return sum(self.pspace.p(*ks) for ks in self.pspace.pks
-                   if self.func(*ks) == x)
 
     ## ----- Probability Inverse Methods ----- ##
 
