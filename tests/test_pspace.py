@@ -6,6 +6,7 @@ Testing the probability spaces module.
 
 ## Test tools
 import itertools as it
+import drv.tools
 
 ## Testee
 import drv.pspace
@@ -55,7 +56,22 @@ def test_Omega_property():
     assert fdps1.Omega == {(i,) for i in xrange(len(fdata1))}
     assert ddps.Omega == {(0,)}
     product = set(it.product(xrange(len(fdata1)), xrange(len(fdata2))))
-    assert drv.pspace.ProductDPSpace(fdps1, fdps2).Omega == product
+    assert pdps2.Omega == product
+
+
+def test_F_property():
+    ## An Omega property must exist, but may return NotImplementedError
+    for ps in [dps, cdps]:
+        try:
+            F = ps.F
+        except NotImplementedError:
+            pass
+
+    ## Special attention for the finite cases:
+    assert fdps1.F == drv.tools.powerset({(i,) for i in xrange(len(fdata1))})
+    assert ddps.F == {set(), set([(0,)])}
+    product = set(it.product(xrange(len(fdata1)), xrange(len(fdata2))))
+    assert pdps2.F == drv.tools.subset(pdps2.Omega)
 
 
 #########################################

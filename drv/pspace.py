@@ -107,6 +107,10 @@ class DPSpace(object):
     def Omega(self):
         raise NotImplementedError
 
+    @property
+    def F(self):
+        raise NotImplementedError
+
     def p(self, k):
         raise NotImplementedError
 
@@ -222,6 +226,10 @@ class FDPSpace(CDPSpace):
     def Omega(self):
         return set((w,) for w in self._Omega)
 
+    @property
+    def F(self):
+        return drv.tools.powerset(self.Omega)
+
     def p(self, k):
         try:
             return self.ps[k]
@@ -268,6 +276,13 @@ class ProductDPSpace(DPSpace):
     def Omega(self):
         omegas = (psp.Omega for psp in self.pspaces)
         return {sum(wt, ()) for wt in it.product(*omegas)}
+
+    @property
+    def F(self):
+        if not self.is_finite:
+            raise NotImplementedError
+
+        return drv.tools.powerset(self.Omega)
 
     def p(self, *ks):
         if len(ks) != len(self.pspaces):
