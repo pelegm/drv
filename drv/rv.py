@@ -27,22 +27,22 @@ class DRV(object):
         self.pspace = pspace
         self.func = func
 
-    def pfunc(self, sample):
-        """ Return the result of func on the sampled data, where sample must
-        contain all coordinates of self's probability space, but may also
+    def sfunc(self, sample):
+        """ Return the result of ``func`` on the sampled data, where *sample*
+        must contain all coordinates of self's probability space, but may also
         contain coordinates of other probability spaces, which should be
         ignored. In case not all coordinates are included in *sample*, raise
         ``ValueError``.
 
-        *sample* is a dictionary pointing probability spaces to single samples.
-        """
-        _sample = []
+        *sample* is a dictionary pointing probability spaces to contained
+        outcomes. """
+        ws = []
         for pspace in self.pspace.pspaces:
             try:
-                _sample.append(sample[pspace])
+                ws.append(sample[pspace])
             except KeyError:
                 raise ValueError("Missing coordinates.")
-        return self.func(*_sample)
+        return self.func(*ws)
 
     ## ----- Representation ----- ##
 
