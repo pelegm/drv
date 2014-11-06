@@ -122,9 +122,6 @@ class FDRV(DRV):
             raise ValueError("The probability space must be finite.")
 
         super(FDRV, self).__init__(name, pspace, func)
-        self.ps = [self.pspace.p(*w) for w in self.pspace.Omega]
-        self.xs = [self.func(*w) for w in self.pspace.Omega]
-        self.items = zip(self.xs, self.ps)
 
     @property
     def mode(self):
@@ -138,7 +135,8 @@ class FDRV(DRV):
     @property
     def support(self):
         """ The values at which the probability mass function is positive. """
-        return [x for x, p in self.items if p > 0]
+        return set([self.func(*w) for w in self.pspace.Omega
+                    if self.pspace.p(*w) > 0])
 
     ## ----- Probability Methods ----- ##
 

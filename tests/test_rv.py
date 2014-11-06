@@ -35,10 +35,21 @@ pdps3 = drv.pspace.ProductDPSpace(fdps3, fdps4)
 
 ## Set random variables
 I = lambda x: x
-drv = drv.rv.DRV('drv', dps, I)
+drv_ = drv.rv.DRV('drv', dps, I)
+fdrv1 = drv.rv.FDRV('fdrv1', fdps1, I)
+fdrv2 = drv.rv.FDRV('fdrv2', fdps2, I)
+fdrv3 = drv.rv.FDRV('fdrv3', fdps3, I)
+fdrv4 = drv.rv.FDRV('fdrv4', fdps4, I)
 
 
 def test_sfunc():
     with pytest.raises(ValueError):
-        drv.sfunc({})
+        drv_.sfunc({})
+
+
+def test_support():
+    ## TODO: infinite
+
+    ## Finite
+    assert fdrv4.support == set(i for i, p in enumerate(fdata4) if p > 0)
 
