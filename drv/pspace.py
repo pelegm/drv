@@ -253,8 +253,8 @@ class FDPSpace(CDPSpace):
         not, its restriction to the naturals is taken into consideration. """
         ## We need to return \int_{\Omega} f dp
         ## In the finite discrete case, this is simply the following finite
-        ## sum: \sum_{k=0}^{n-1} f(k)p(k), where n is the length of 'ps'
-        return sum(func(k) * p for k, p in enumerate(self.ps))
+        ## sum: \sum_{w=0}^{n-1} f(w)p(w), where n is the length of 'ps'
+        return sum(func(w) * p for w, p in enumerate(self.ps))
 
 
 class DegeneratePSpace(FDPSpace):
