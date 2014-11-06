@@ -111,16 +111,17 @@ class DPSpace(object):
     def F(self):
         raise NotImplementedError
 
-    def p(self, k):
-        raise NotImplementedError
-
     def P(self, event):
         """ Return the probability of *event*.
 
         It is assumed that *event* is a finite iterable of elements from the
         support. """
         ## TODO: implement infinite events
-        return sum(self.p(k) for k in event)
+        return sum(self.p(w) for w in event)
+
+    def p(self, w):
+        """ Return the probability of the outcome *w*. """
+        raise NotImplementedError
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
@@ -230,12 +231,11 @@ class FDPSpace(CDPSpace):
     def F(self):
         return drv.tools.powerset(self.Omega)
 
-    def p(self, k):
+    def p(self, w):
+        """ Return the probability of the outcome *w*. """
         try:
-            return self.ps[k]
+            return self.ps[w]
         except IndexError:
-            return 0
-        except TypeError:
             return 0
 
     @property
@@ -262,8 +262,9 @@ class DegeneratePSpace(FDPSpace):
     def __init__(self):
         super(DegeneratePSpace, self).__init__([1.0])
 
-    def p(self, k):
-        return 1.0 if k == 0 else 0.0
+    def p(self, w):
+        """ Return the probability of the outcome *w*. """
+        return 1.0 if w == 0 else 0.0
 
 
 class ProductDPSpace(DPSpace):
@@ -284,10 +285,11 @@ class ProductDPSpace(DPSpace):
 
         return drv.tools.powerset(self.Omega)
 
-    def p(self, *ks):
-        if len(ks) != len(self.pspaces):
+    def p(self, *ws):
+        """ Return the probability of the outcome *w*. """
+        if len(ws) != len(self.pspaces):
             return 0.
-        return np.prod([psp.p(k) for psp, k in zip(self.pspaces, ks)])
+        return np.prod([pspace.p(w) for pspace, w in zip(self.pspaces, ws)])
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
