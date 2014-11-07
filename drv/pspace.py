@@ -9,8 +9,11 @@ import drv.tools
 
 import itertools as it
 import numpy as np
-import sympy
 import warnings
+
+## Symbolic
+import sympy
+sympify = sympy.sympify
 
 
 ## Messages
@@ -74,11 +77,14 @@ def _f_normalize(ps):
     if min(ps) < 0:
         raise ValueError(NEG_PROB)
 
-    psum = sum(ps)
+    ## Sympify
+    s_ps = sympify(ps)
+
+    psum = sum(s_ps)
     if not psum:
         raise ValueError(ZERO_PROB)
 
-    return [1.0 * p / psum for p in ps]
+    return [p / psum for p in s_ps]
 
 
 class DPSpace(object):
@@ -231,7 +237,7 @@ class FDPSpace(CDPSpace):
 
     @property
     def F(self):
-        return drv.tools.powerset(self.Omega)
+        return set(drv.tools.powerset(self.Omega))
 
     def p(self, w):
         """ Return the probability of the outcome *w*. """
@@ -256,7 +262,12 @@ class FDPSpace(CDPSpace):
         ## We need to return \int_{\Omega} f dp
         ## In the finite discrete case, this is simply the following finite
         ## sum: \sum_{w=0}^{n-1} f(w)p(w), where n is the length of 'ps'
-        return sum(func(*w) * self.p(*w) for w in self.Omega)
+        try:
+            return sum(func(*w) * self.p(*w) for w in self.Omega)
+        except AttributeError:
+            print func, func(0), func(sympify(0)), func(sympify(1))
+            print self.p, self.p(0), self.p(sympify(0)), self.p(sympify(1))
+            raise
 
 
 class DegeneratePSpace(FDPSpace):
@@ -287,7 +298,7 @@ class ProductDPSpace(DPSpace):
         if not self.is_finite:
             raise NotImplementedError
 
-        return drv.tools.powerset(self.Omega)
+        return set(drv.tools.powerset(self.Omega))
 
     def p(self, *ws):
         """ Return the probability of the outcome *w*. """
