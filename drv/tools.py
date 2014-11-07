@@ -59,7 +59,7 @@ def powerset(aset, maxsize=inf):
     >>> list(powerset('', maxsize=7))
     [set([])]
     """
-    return (set(t) for t in powerseq(aset, maxsize=maxsize))
+    return (frozenset(t) for t in powerseq(aset, maxsize=maxsize))
 
 
 def unzip(zipped):
