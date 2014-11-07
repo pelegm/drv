@@ -138,20 +138,6 @@ class FDRV(DRV):
         return set([self.func(*w) for w in self.pspace.Omega
                     if self.pspace.p(*w) > 0])
 
-    ## ----- Probability Methods ----- ##
-
-    def _cdf(self, i):
-        """ Return the cumulative distribution function at the category whose
-        index is *i*. """
-        return sum(p for j, (x, p) in enumerate(self.items) if j <= i)
-
-    def cdf(self, k):
-        """ Return the cumulative distribution function at *k*. """
-        try:
-            return self._cdf(self.xs.index(k))
-        except ValueError:
-            raise ValueError("Category '{}' is not supported.".format(k))
-
     ## ----- Probability Inverse Methods ----- ##
 
     def ppf(self, q):
