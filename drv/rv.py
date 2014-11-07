@@ -64,6 +64,7 @@ class DRV(object):
 
     ## ----- Probability Properties ----- ##
 
+    @property
     def mode(self):
         """ The value at which the probability mass function takes its maximum
         value.
@@ -72,6 +73,7 @@ class DRV(object):
         exists, this is an arbitrary mode. """
         raise NotImplementedError
 
+    @property
     def support(self):
         """ The values at which the probability mass function is positive. """
         raise NotImplementedError
