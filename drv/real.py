@@ -381,12 +381,12 @@ class FRDRV(drv.rv.FDRV, RDRV):
     @property
     def max(self):
         """ The maximum of the random variable. """
-        return self.xs[-1]
+        return max(self.support)
 
     @property
     def min(self):
         """ The minimum of the random variable. """
-        return self.xs[0]
+        return min(self.support)
 
     ## ----- Probability Methods ----- ##
 
