@@ -8,38 +8,53 @@ Testing the random variables module.
 import pytest
 
 ## Testee
+import drv.pspace
 import drv.rv
 
 
 ## Set data sets
 cfunc2 = lambda n: 1 / (n + 1) ** 2
-fdata1 = range(1, 6)
-fdata2 = range(2, 5)
-fdata3 = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-fdata4 = [1, 1, 2, 0, 5, 8, 13, 0, 34, 0]
+fdata = [range(1, 6), range(2, 5), [1, 1, 2, 3, 5, 8, 13, 21, 34, 55],
+         [1, 1, 2, 0, 5, 8, 13, 0, 34, 0]]
 
 
 ## Set probability spaces
 dps = drv.pspace.DPSpace()
 cdps = drv.pspace.CDPSpace(cfunc2)
-fdps1 = drv.pspace.FDPSpace(fdata1)
-fdps2 = drv.pspace.FDPSpace(fdata2)
-fdps3 = drv.pspace.FDPSpace(fdata3)
-fdps4 = drv.pspace.FDPSpace(fdata4)
+fdps = [drv.pspace.FDPSpace(ps) for ps in fdata]
 ddps = drv.pspace.DegeneratePSpace()
-pdps0 = drv.pspace.ProductDPSpace()
-pdps1 = drv.pspace.ProductDPSpace(fdps1)
-pdps2 = drv.pspace.ProductDPSpace(fdps1, fdps2)
-pdps3 = drv.pspace.ProductDPSpace(fdps3, fdps4)
+pdps = [drv.pspace.ProductDPSpace(*pss) for pss in
+        [(), fdps[:1], fdps[:2], fdps[2:]]]
 
 
 ## Set random variables
 I = lambda x: x
+f = lambda x: (x % 5) ** 2
 drv_ = drv.rv.DRV('drv', dps, I)
-fdrv1 = drv.rv.FDRV('fdrv1', fdps1, I)
-fdrv2 = drv.rv.FDRV('fdrv2', fdps2, I)
-fdrv3 = drv.rv.FDRV('fdrv3', fdps3, I)
-fdrv4 = drv.rv.FDRV('fdrv4', fdps4, I)
+fdrv = [drv.rv.FDRV('fdrv{}'.format(n), ps, I) for n, ps in enumerate(fdps)]
+fdrv_f = [drv.rv.FDRV('fdrv{}'.format(n), ps, f) for n, ps in enumerate(fdps)]
+
+
+################################################
+## ----- Testing Probability Properties ----- ##
+################################################
+
+def test_mode():
+    ## Infinite
+    with pytest.raises(NotImplementedError):
+        drv_.mode
+
+    ## Finite
+    for n, (data, rv, rvf) in enumerate(zip(fdata, fdrv, fdrv_f)):
+        assert rv.mode == len(data) - (1 if n < 3 else 2)
+        assert rvf.mode == f(len(data) - (1 if n < 3 else 2))
+
+
+def test_pmf():
+    ## Finite (I)
+    s2 = sum(fdata[2])
+    for w, p in enumerate(fdata[2]):
+        assert fdrv[2].pmf(w) == 1.0 * p / s2
 
 
 def test_sfunc():
@@ -48,8 +63,10 @@ def test_sfunc():
 
 
 def test_support():
-    ## TODO: infinite
+    ## Infinite
+    with pytest.raises(NotImplementedError):
+        drv_.support
 
     ## Finite
-    assert fdrv4.support == set(i for i, p in enumerate(fdata4) if p > 0)
+    assert fdrv[3].support == set(i for i, p in enumerate(fdata[3]) if p > 0)
 

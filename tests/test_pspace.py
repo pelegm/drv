@@ -68,10 +68,11 @@ def test_F_property():
             pass
 
     ## Special attention for the finite cases:
-    assert fdps1.F == drv.tools.powerset({(i,) for i in xrange(len(fdata1))})
-    assert ddps.F == {set(), set([(0,)])}
+    assert fdps1.F == set(drv.tools.powerset({(i,) for i in
+                                              xrange(len(fdata1))}))
+    assert ddps.F == {frozenset(), frozenset([(0,)])}
     product = set(it.product(xrange(len(fdata1)), xrange(len(fdata2))))
-    assert pdps2.F == drv.tools.subset(pdps2.Omega)
+    assert pdps2.F == set(drv.tools.powerset(pdps2.Omega))
 
 
 #########################################
