@@ -183,16 +183,11 @@ class FDRV(DRV):
     def flatten(self, name=None):
         """ Return a random variable with a new probability space whose sample
         set is the inverse image of func. """
-        xp = col.defaultdict(float)
-        for p, x in zip(self.ps, self.xs):
-            if not p:
-                continue
-            xp[x] += p
+        ks = sorted(self.support)
+        ps = [self.pmf(k) for k in ks]
 
-        xs, ps = drv.tools.unzip(xp.viewitems())
-
-        pspace = drv.pspace.FDPSpace(ps)
-        func = lambda k: xs[k]
         name = name or self.name
-        return self.__class__(self.name, pspace, func)
+        pspace = drv.pspace.FDPSpace(ps)
+        func = lambda w: ks[w]
+        return self.__class__(name, pspace, func)
 
