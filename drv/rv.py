@@ -8,6 +8,11 @@ import collections as col
 import drv.tools
 import drv.pspace
 
+## Symbolic
+import sympy
+One = sympy.S.One
+Zero = sympy.S.Zero
+
 
 ## Messages
 PMF_GENERAL = "PMF is not implemented for general random variables."
@@ -80,7 +85,7 @@ class DRV(object):
 
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
-        indicator = lambda *w: self.func(*w) == k
+        indicator = lambda *w: One if self.func(*w) == k else Zero
         return self.pspace.integrate(indicator)
 
     ## ----- Operations ----- ##
