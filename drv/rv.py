@@ -10,12 +10,10 @@ import drv.pspace
 
 ## Symbolic
 import sympy
-One = sympy.S.One
-Zero = sympy.S.Zero
 
 
-## Messages
-PMF_GENERAL = "PMF is not implemented for general random variables."
+## Symbolic tools
+indicator = lambda c: sympy.sympify(1) if c else sympy.sympify(0)
 
 
 class DRV(object):
@@ -82,13 +80,13 @@ class DRV(object):
 
     def cdf(self, k):
         """ Return the cumulative distribution function at *k*. """
-        cumulative = lambda *w: self.func(*w) <= k
+        cumulative = lambda *w: indicator(self.func(*w) <= k)
         return self.pspace.integrate(cumulative)
 
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
-        indicator = lambda *w: One if self.func(*w) == k else Zero
-        return self.pspace.integrate(indicator)
+        ind = lambda *w: indicator(self.func(*w) == k)
+        return self.pspace.integrate(ind)
 
     ## ----- Operations ----- ##
 
@@ -130,6 +128,8 @@ class FDRV(DRV):
 
         super(FDRV, self).__init__(name, pspace, func)
 
+    ## ----- Probability Properties ----- ##
+
     @property
     def mode(self):
         """ The value at which the probability mass function takes its maximum
@@ -137,7 +137,7 @@ class FDRV(DRV):
 
         .. warning:: the mode is not necessarily unique. If more than one mode
         exists, this is an arbitrary mode. """
-        return max(self.items, key=lambda t: t[1])[0]
+        return max(self.support, key=lambda k: self.pmf(k))
 
     @property
     def support(self):
