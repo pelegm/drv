@@ -123,6 +123,10 @@ class DPSpace(object):
         """ Return the probability of the outcome *w*. """
         raise NotImplementedError
 
+    @property
+    def pspaces(self):
+        return self,
+
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
         represented by the probability space. """
@@ -157,7 +161,6 @@ class CDPSpace(DPSpace):
         given *precision*. """
         self.precision = precision
         self.p = _normalize(p, precision=self.precision, strict=False)
-        self.pspaces = self,
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
@@ -221,7 +224,6 @@ class FDPSpace(CDPSpace):
 
     def __init__(self, ps):
         self._Omega, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
-        self.pspaces = self,
 
     @property
     def Omega(self):
@@ -269,6 +271,8 @@ class DegeneratePSpace(FDPSpace):
 
 class ProductDPSpace(DPSpace):
     """ A product space of (general) discrete probability spaces. """
+    pspaces = ()
+
     def __init__(self, *pspaces):
         self.pspaces = pspaces
         self.is_finite = all(pspace.is_finite for pspace in pspaces)
