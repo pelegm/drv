@@ -73,15 +73,15 @@ class DRV(object):
 
     ## ----- Probability Methods ----- ##
 
-    def indicator(self, k):
-        """ Return the indicator function at X=*k*. """
-        def ind(w, k=k, func=self.func):
-            return func(w) == k
-        return ind
+    def cdf(self, k):
+        """ Return the cumulative distribution function at *k*. """
+        cumulative = lambda *w: self.func(*w) <= k
+        return self.pspace.integrate(cumulative)
 
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
-        return self.pspace.integrate(self.indicator(k))
+        indicator = lambda *w: self.func(*w) == k
+        return self.pspace.integrate(indicator)
 
     ## ----- Operations ----- ##
 

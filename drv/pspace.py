@@ -254,7 +254,7 @@ class FDPSpace(CDPSpace):
         ## We need to return \int_{\Omega} f dp
         ## In the finite discrete case, this is simply the following finite
         ## sum: \sum_{w=0}^{n-1} f(w)p(w), where n is the length of 'ps'
-        return sum(func(w) * p for w, p in enumerate(self.ps))
+        return sum(func(*w) * self.p(*w) for w in self.Omega)
 
 
 class DegeneratePSpace(FDPSpace):
