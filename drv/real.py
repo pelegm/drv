@@ -20,6 +20,11 @@ EMPTY_SUPPORT = "The support may not be empty."
 REAL_SUPPORT = "The support must contain reals only."
 PPF_DOMAIN = "A PPF is defined on (0,1] only."
 
+
+## Constants
+Zero = sympy.S.Zero
+Half = sympy.S.Half
+One = sympy.S.One
 inf = float('inf')
 
 
@@ -77,7 +82,7 @@ class RDRV(drv.rv.DRV):
     @property
     def std(self):
         """ The standard deviation of the random variable. """
-        return self.variance ** 0.5
+        return self.variance ** Half
 
     @property
     def variance(self):
@@ -95,17 +100,11 @@ class RDRV(drv.rv.DRV):
         """ Return the *n*'th central moment. """
         return self.pspace.integrate(self._moment_func(n, self.mean))
 
-    def expectation_old(self, function):
-        """ Return the expected value of a function *function* with respect to
-        the distribution of the random variable. *function* should be a
-        function of one argument. """
-        raise NotImplementedError
-
     def mgf(self, t):
         """ Return the moment-generating function at *t*. """
         return self.pspace.integrate(lambda x: sympy.exp(t * self.func(x)))
 
-    def _moment_func(self, n, c=0, s=1):
+    def _moment_func(self, n, c=Zero, s=One):
         def mfunc(x, n=n, c=c, func=self.func):
             return ((func(x) - c) / s) ** n
         return mfunc
