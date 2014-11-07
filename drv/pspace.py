@@ -13,6 +13,7 @@ import warnings
 
 ## Symbolic
 import sympy
+import sympy.mpmath
 sympify = sympy.sympify
 
 
@@ -22,6 +23,10 @@ NEG_PROB = "Cannot instantiate PSpace with negative probability."
 NIE_PROB = "Could not determine if p is nonnegative."
 ZERO_PROB = "Cannot instantiate PSPace with zero-sum probabilities."
 INTEGRATE_GENERAL = "Cannot integrate a general PSpace."
+
+
+## Constants
+oo = sympy.oo
 
 
 ## Tools
@@ -34,9 +39,9 @@ def _normalize(p, precision, strict=False):
     ## ValueError if strict, or assume the minimum is 0 otherwise.
     ##
     ## See for example https://github.com/sympy/sympy/issues/8221 
-    k = sympy.Symbol('k', integer=True, nonnegative=True)
+    w = sympy.Symbol('w', integer=True, nonnegative=True)
     try:
-        nonneg = sympy.solve(p(k) >= 0)
+        nonneg = sympy.solve(p(w) >= 0)
     except NotImplementedError:
         if strict:
             raise ValueError(NIE_PROB)
@@ -46,29 +51,18 @@ def _normalize(p, precision, strict=False):
         raise ValueError(NEG_PROB)
 
     n = sympy.Symbol('n', integer=True, nonnegative=True)
-    sym_sum = sympy.Sum(p(n), (n, 0, sympy.oo)).doit()
+    summand = p(n)
+    _sum = sympy.Sum(summand, (n, 0, oo)).doit()
 
-    ## The following does not always work, as there are some SymPy bugs
-    ## See for example https://github.com/sympy/sympy/issues/8219
-    ## In case it fails with an AttributeError, we warn but assume p is ok as
-    ## is.
-    try:
-        _sum = sym_sum.evalf(n=precision)
-        if _sum.is_infinite:
-            raise ValueError(INF_PROB)
-        f_sum = float(_sum)
-    except AttributeError:
-        warnings.warn("SymPy bug #8219; assumes p is normalized.")
-        return p
+    ## Sum is infinite, we should raise
+    if _sum.is_infinite:
+        raise ValueError(INF_PROB)
 
-    ## Don't allow 0 total probability
-    if not f_sum:
+    ## Sum is zero, we should raise
+    if _sum.is_zero:
         raise ValueError(ZERO_PROB)
 
-    def _p(k, p=p, f_sum=f_sum):
-        return p(k) / f_sum
-
-    return _p
+    return sympy.Lambda(w, p(w) / _sum)
 
 
 def _f_normalize(ps):
@@ -167,6 +161,7 @@ class CDPSpace(DPSpace):
         given *precision*. """
         self.precision = precision
         self.p = _normalize(p, precision=self.precision, strict=False)
+        # self.p = p
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
@@ -180,24 +175,32 @@ class CDPSpace(DPSpace):
 
         ## We try a symbolic summation
         n = sympy.Symbol('n', integer=True, nonnegative=True)
-        sym_sum = sympy.Sum(func(n) * self.p(n), (n, 0, sympy.oo)).doit()
-        try:
-            _sum = sym_sum.evalf(n=self.precision)
+        summand = func(n) * self.p(n)
+        _sum = sympy.Sum(summand, (n, 0, oo)).doit()
 
-        ## This occasionaly fails due to various SymPy bugs
-        ## See for example https://github.com/sympy/sympy/issues/8254
-        except TypeError:
-            raise NotImplementedError("SymPy bug #8254.")
+        ## Sum is still a sum, we need to evalf it
+        if type(_sum) is sympy.Sum:
 
-        f_sum = float(_sum)
+            ## This occasionaly fails due to various SymPy bugs
+            ## See for example https://github.com/sympy/sympy/issues/8254
+            try:
+                _sum = sym_sum.evalf()
+            except TypeError:
+                raise NotImplementedError("SymPy bug #8254.")
 
-        ## This is sometimes wrong, and returns nan
-        ## See for example https://github.com/sympy/sympy/issues/8251
-        ## In the meanwhile, if this returns nan, we raise
-        if np.isnan(f_sum):
-            raise NotImplementedError("SymPy bug #8251.")
+        ## Sum is infinite, we should return it
+        if _sum.is_infinite:
+            return _sum
 
-        return f_sum
+        ## Sum is real, we should return it
+        if _sum.is_real:
+            return _sum
+
+        if sympy.mpmath.isnan(float(_sum)):
+            raise NotImplementedError("nan bug. Tried to sum: {}".format(
+                summand))
+
+        raise NotImplementedError("Couldn't integrate. Got: {}".format(_sum))
 
     @property
     def entropy(self):
