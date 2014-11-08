@@ -254,7 +254,7 @@ class FDPSpace(CDPSpace):
         """ The (natural) entropy of the probability space. """
         ## When taken from a finite sample, the entropy can be explicitly
         ## written as H(X) = -\sum_i p(i) \log{p(i)}
-        return -sum(p * sympy.log(p) for p in self.ps).doit().evalf()
+        return -sum(p * sympy.log(p) for p in self.ps).doit()
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
