@@ -10,6 +10,9 @@ import drv.real
 ## Background
 import drv.pspace
 
+## Tools
+import itertools as it
+
 ## Symbolic
 import sympy
 
@@ -210,6 +213,7 @@ def test_independence_expectation():
 Half = sympy.S.Half
 One = sympy.S.One
 exp = sympy.exp
+ln = sympy.ln
 
 
 factorial = sympy.factorial
@@ -220,7 +224,37 @@ Lambda = sympy.Lambda
 I = lambda x: x
 
 
-def test_poisson():
+def test_real_uniform():
+    lefts = sympy.sympify([-3, 0, 2])
+    ns = sympy.sympify([3, 7])
+    for a, n in it.product(lefts, ns):
+        b = a + n - 1
+        ps = [1] * n
+        pspace = drv.pspace.FDPSpace(ps)
+        func = lambda w: w + a
+        rv = drv.real.FRDRV('uniform', pspace, func)
+
+        assert rv.entropy == ln(n)
+        assert rv.kurtosis == -(6 * (n ** 2 + 1)) / (5 * (n ** 2 - 1))
+        assert rv.max == b
+        assert rv.mean == (a + b) / 2
+        ## TODO: this test fails
+        ## We need to re-implement median and/or ppf
+        #assert rv.median == (a + b) / 2
+        assert rv.min == a
+        assert rv.skewness == 0
+        assert rv.std == ((n ** 2 - 1) / 12) ** Half
+        assert rv.variance == (n ** 2 - 1) / 12
+        ## TODO: re-implement cdf for FRDRV
+        #assert rv.cdf(-3) == (-2 - a) / n
+        #assert rv.cdf(0) == (1 - a) / n
+        #assert rv.cdf(2) == (3 - a) / n
+        assert rv.mgf(0) == One
+        ## TODO: this test fails
+        #assert rv.mgf(1) == (exp(a) - exp(b+1)) / (n * (1 - exp(1)))
+
+
+def test_real_poisson():
     lambdas = [One / 2, One, One * 2]
     k = Symbol('k', integer=True, nonnegative=True)
     for lam in lambdas:
