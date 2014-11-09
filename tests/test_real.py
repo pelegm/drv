@@ -210,6 +210,7 @@ def test_independence_expectation():
 ## ----- Testing Concrete ----- ##
 ##################################
 
+Zero = sympy.S.Zero
 Half = sympy.S.Half
 One = sympy.S.One
 exp = sympy.exp
@@ -222,6 +223,35 @@ Lambda = sympy.Lambda
 
 
 I = lambda x: x
+
+
+def test_real_bernoulli():
+    ps = [Half / 2, Half, Half + Half / 2]
+    for p in ps:
+        q = 1 - p
+        pspace = drv.pspace.FDPSpace([q, p])
+        rv = drv.real.FRDRV('bernoulli', pspace, I)
+
+        assert rv.entropy == -q * ln(q) - p * ln(p)
+        assert rv.kurtosis == (1 - 6 * p * q) / (p * q)
+        assert rv.max == One
+        assert rv.mean == p
+        ## TODO: this test fails
+        ## We need to re-implement median and/or ppf
+        #assert rv.median == Zero if q > p else One if q < p else Half
+        assert rv.min == Zero
+        assert rv.skewness == (q - p) / (p * q) ** Half
+        assert rv.std == (p * q) ** Half
+        assert rv.variance == p * q
+        ## TODO: re-implement cdf for FRDRV
+        # assert rv.cdf(-One) == Zero
+        # assert rv.cdf(-Half) == Zero
+        # assert rv.cdf(Zero) == q
+        # assert rv.cdf(Half) == q
+        # assert rv.cdf(One) == One
+        # assert rv.cdf(One + Half) == One
+        assert rv.mgf(0) == One
+        assert rv.mgf(One) == q + p * exp(1)
 
 
 def test_real_uniform():
