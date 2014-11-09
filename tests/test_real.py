@@ -4,6 +4,10 @@
 Testing the real module.
 """
 
+## Test tools
+import pytest
+slow = pytest.mark.slow
+
 ## Testee
 import drv.real
 
@@ -284,6 +288,8 @@ def test_real_uniform():
         #assert rv.mgf(1) == (exp(a) - exp(b+1)) / (n * (1 - exp(1)))
 
 
+## TODO: check what's so slow about it
+@slow
 def test_real_poisson():
     lambdas = [One / 2, One, One * 2]
     k = Symbol('k', integer=True, nonnegative=True)
