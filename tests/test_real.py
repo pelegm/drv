@@ -221,21 +221,59 @@ exp = sympy.exp
 ln = sympy.ln
 
 
+binomial = sympy.binomial
 factorial = sympy.factorial
+sqrt = sympy.sqrt
 Symbol = sympy.Symbol
 Lambda = sympy.Lambda
 
 
 I = lambda x: x
+n = Symbol('n', integer=True, nonnegative=True)
+t = Symbol('t', real=True)
+
+
+## Each of the following tests should do the following:
+## - run over 2-3 options for each distribution param
+## - build an appropriate pspace
+## - build a relevant func (possibly the identity)
+## - build a random variable
+## - for RDRV, assert each of the following properties:
+##   - entropy
+##   - kurtosis
+##   - max
+##   - mean
+##   - median
+##   - min
+##   - skewness
+##   - std
+##   - variance
+## - for RDRV, assert each of the following methods:
+##   - cdf
+##   - mgf
+##   - pmf
+## - for FRDRV, assert in addition the following properties:
+##   - mode
+##   - support
 
 
 def test_real_bernoulli():
-    ps = [Half / 2, Half, Half + Half / 2]
-    for p in ps:
+    ## Params
+    p_s = [Half / 2, Half, Half + Half / 2]
+
+    for p in p_s:
+
+        ## Deduced params
         q = 1 - p
-        pspace = drv.pspace.FDPSpace([q, p])
+
+        ## PSpace
+        ps = [q, p]
+        pspace = drv.pspace.FDPSpace(ps)
+
+        ## RV
         rv = drv.real.FRDRV('bernoulli', pspace, I)
 
+        ## Properties
         assert rv.entropy == -q * ln(q) - p * ln(p)
         assert rv.kurtosis == (1 - 6 * p * q) / (p * q)
         assert rv.max == One
@@ -244,9 +282,18 @@ def test_real_bernoulli():
         ## We need to re-implement median and/or ppf
         #assert rv.median == Zero if q > p else One if q < p else Half
         assert rv.min == Zero
-        assert rv.skewness == (q - p) / (p * q) ** Half
-        assert rv.std == (p * q) ** Half
+        if q > p:
+            assert rv.mode == Zero
+        elif q < p:
+            assert rv.mode == One
+        else:
+            assert rv.mode == Zero or rv.mode == One
+        assert rv.skewness == (q - p) / sqrt(p * q)
+        assert rv.std == sqrt(p * q)
+        assert rv.support == set([0, 1])
         assert rv.variance == p * q
+
+        ## Methods
         ## TODO: re-implement cdf for FRDRV
         # assert rv.cdf(-One) == Zero
         # assert rv.cdf(-Half) == Zero
@@ -254,8 +301,33 @@ def test_real_bernoulli():
         # assert rv.cdf(Half) == q
         # assert rv.cdf(One) == One
         # assert rv.cdf(One + Half) == One
+        assert rv.mgf(t).equals(q + p * exp(t))
+
+
+def test_real_binomial():
+    ns = sympy.sympify([1, 5, 100])
+    ps = [Half / 2, Half, Half + Half / 2]
+    for n, p in it.product(ns, ps):
+        q = 1 - p
+        pmf = lambda k: binomial(n, k) * p ** k * q ** (n - k)
+        pspace = drv.pspace.FDPSpace([pmf(k) for k in xrange(n + 1)])
+        rv = drv.real.FRDRV('binomial', pspace, I)
+
+        ## Entropy is too complex so we skip it
+        assert rv.kurtosis == (1 - 6 * p * q) / (n * p * q)
+        assert rv.max == n
+        assert rv.mean == n * p
+        ## We need to re-implement median and/or ppf
+        # assert rv.median == floor(np) or rv.median == ceiling(np)
+        assert rv.min == 0
+        assert rv.skewness == (1 - 2 * p) / (n * p * q) ** Half
+        assert rv.std == (n * p * q) ** Half
+        assert rv.variance == n * p * q
+        ## TODO: build appropriate tests for binomial CDF
         assert rv.mgf(0) == One
-        assert rv.mgf(One) == q + p * exp(1)
+        ## TODO: thes fail
+        # assert rv.mgf(1) == (q + p * exp(1)) ** n
+        # assert rv.mgf(3) == (q + p * exp(3)) ** n
 
 
 def test_real_uniform():
