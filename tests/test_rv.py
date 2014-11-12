@@ -36,6 +36,8 @@ I = lambda x: x
 f = lambda x: (x % 5) ** 2
 cat_f = lambda w: cat_data[w]
 drv_ = drv.rv.DRV('drv', dps, I)
+cdrv = drv.rv.DRV('cdrv', cdps, I)
+cdrv_f = drv.rv.DRV('cdrv', cdps, f)
 fdrv = [drv.rv.FDRV('fdrv{}'.format(n), ps, I) for n, ps in enumerate(fdps)]
 fdrv_f = [drv.rv.FDRV('fdrv{}'.format(n), ps, f) for n, ps in enumerate(fdps)]
 cat_rv = drv.rv.FDRV('cat_rv', fdps[0], cat_f)
@@ -45,23 +47,12 @@ cat_rv = drv.rv.FDRV('cat_rv', fdps[0], cat_f)
 ## ----- Testing Probability Properties ----- ##
 ################################################
 
-
 def test_categorial_pdf():
     ## Finite, categorial
     n = sum(fdata[0])
+    assert cat_rv.pmf(str) == 0
     for i, cat in enumerate(cat_data):
         assert cat_rv.pmf(cat) == sympy.Rational(i + 1, n)
-
-
-def test_categorial_cdf():
-    ## Finite, categorial
-    p = sympy.Rational(1, 5)
-    ## TODO: these still fail
-    ## This needs decision; see #17
-    #assert cat_rv.cdf(-1) == 0
-    #for i in xrange(6):
-        #    assert cat_rv.cdf(i) == p * (i + 1)
-    #assert cat_rv.cdf(6) == 1
 
 
 def test_mode():
@@ -76,7 +67,12 @@ def test_mode():
 
 
 def test_pmf():
-    ## Finite (I)
+    ## Infinite
+    for w in [173, 1733, 17333]:
+        assert cdrv.pmf(w) == cfunc2(w)
+        assert cdrv_f.pmf(f(w)) == cfunc2(w)
+
+    ## Finite
     s2 = sum(fdata[2])
     for w, p in enumerate(fdata[2]):
         assert fdrv[2].pmf(w) == 1.0 * p / s2

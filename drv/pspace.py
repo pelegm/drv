@@ -156,12 +156,21 @@ class CDPSpace(DPSpace):
 
     Thus, to create a :class:`CDPSpace`, one only needs to provide the
     probability function p. """
+    _pspace_counter = it.count()
+
     def __init__(self, p, precision=10):
         """ Keep the probability function p, but normalize it first, using the
         given *precision*. """
+        ## Register symbol (for symbolic integration)
+        self._register()
+
         self.precision = precision
         self.p = _normalize(p, precision=self.precision, strict=False)
         # self.p = p
+
+    def _register(self):
+        self.symbol = sympy.Symbol("ps:{}".format(self._pspace_counter.next()),
+                                   integer=True, nonnegative=True)
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
@@ -232,6 +241,9 @@ class FDPSpace(CDPSpace):
     is_finite = True
 
     def __init__(self, ps):
+        ## Register
+        self._register()
+
         self._Omega, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
 
     @property
@@ -312,6 +324,15 @@ class ProductDPSpace(DPSpace):
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
         represented by the probability space. """
+        ## Try: symbolic integration, one pspace after another
+        symbols = (pspace.symbol for pspace in self.pspaces)
+        expr = func(*symbols)
+        for pspace in self.pspaces:
+            _func = sympy.Lambda(pspace.symbol, expr)
+            expr = pspace.integrate(_func)
+
+        return expr
+
         if not self.is_finite:
             raise NotImplementedError
 

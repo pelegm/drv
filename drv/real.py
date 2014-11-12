@@ -106,8 +106,8 @@ class RDRV(drv.rv.DRV):
         return self.pspace.integrate(lambda x: sympy.exp(t * self.func(x)))
 
     def _moment_func(self, n, c=Zero, s=One):
-        def mfunc(x, n=n, c=c, func=self.func):
-            return ((func(x) - c) / s) ** n
+        def mfunc(*x):
+            return ((self.func(*x) - c) / s) ** n
         return mfunc
 
     def moment(self, n):
@@ -177,7 +177,7 @@ class RDRV(drv.rv.DRV):
 
         ## We know how to handle it
         ## Create the relevant product pspace
-        pspaces = set(self.pspace.pspaces + other.pspace.pspaces)
+        pspaces = frozenset(self.pspace.pspaces + other.pspace.pspaces)
         pspace = drv.pspace.ProductDPSpace(*pspaces)
 
         ## Reverse if needed
@@ -189,9 +189,10 @@ class RDRV(drv.rv.DRV):
         ## Create the new func
         def func(*ks):
             if len(ks) != len(pspaces):
-                raise ValueError
+                raise ValueError("{} pspaces and {} ks".format(len(pspaces),
+                    len(ks)))
             sample = dict(zip(pspace.pspaces, ks))
-            return operator(a.pfunc(sample), b.pfunc(sample))
+            return operator(a.sfunc(sample), b.sfunc(sample))
 
         klass = klass or self.__class__
         _drv = klass(name, pspace, func)
