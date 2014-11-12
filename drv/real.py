@@ -94,7 +94,8 @@ class RDRV(drv.rv.DRV):
 
     def cdf(self, k):
         """ Return the cumulative distribution function at *k*. """
-        raise NotImplementedError
+        cumulative = lambda *w: indicator(self.func(*w) <= k)
+        return self.pspace.integrate(cumulative)
 
     def central_moment(self, n):
         """ Return the *n*'th central moment. """
@@ -386,12 +387,6 @@ class FRDRV(drv.rv.FDRV, RDRV):
     def min(self):
         """ The minimum of the random variable. """
         return min(self.support)
-
-    ## ----- Probability Methods ----- ##
-
-    def cdf(self, k):
-        """ Return the cumulative distribution function at *k*. """
-        return sum(p for x, p in self.items if x <= k)
 
     ## ----- Probability Inverse Methods ----- ##
 

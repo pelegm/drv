@@ -78,11 +78,6 @@ class DRV(object):
 
     ## ----- Probability Methods ----- ##
 
-    def cdf(self, k):
-        """ Return the cumulative distribution function at *k*. """
-        cumulative = lambda *w: indicator(self.func(*w) <= k)
-        return self.pspace.integrate(cumulative)
-
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
         ind = lambda *w: indicator(self.func(*w) == k)
