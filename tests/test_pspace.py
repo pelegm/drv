@@ -81,9 +81,13 @@ def test_F_property():
 
 def test_product_pspace_integration():
     ## For infinite pspaces, this is not implemented
-    func = lambda k1, k2: k1 + k2
-    func_1 = lambda k1: k1 + fdps4.integrate(lambda k2: k2)
-    func_2 = lambda k2: k2 + fdps3.integrate(lambda k1: k1)
+    x, y = fdps3.symbol, fdps4.symbol
+    func = x + y
+    func_1 = k1 + fdps4.integrate(y)
+    func_2 = k2 + fdps3.integrate(x)
+    # func = lambda k1, k2: k1 + k2
+    # func_1 = lambda k1: k1 + fdps4.integrate(lambda k2: k2)
+    # func_2 = lambda k2: k2 + fdps3.integrate(lambda k1: k1)
     assert equal(fdps3.integrate(func_1), pdps3.integrate(func))
     assert equal(fdps4.integrate(func_2), pdps3.integrate(func))
 

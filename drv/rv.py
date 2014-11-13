@@ -43,12 +43,6 @@ class DRV(object):
         except sympy.SympifyError:
             raise ValueError("Could not sympify {}".format(func))
 
-    def eval(self, wm):
-        """ Evaluate self's function on the (ordered) input *w*. """
-        if not isinstance(wm, dict):
-            wm = {self.pspace.symbol: wm}
-        return self.func.subs(wm)
-
     def sfunc(self, sample):
         """ Return the result of ``func`` on the sampled data, where *sample*
         must contain all coordinates of self's probability space, but may also

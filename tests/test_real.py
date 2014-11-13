@@ -179,7 +179,7 @@ def test_linearity_of_expectation():
     p2 = lambda n: 1. / (n + 11) ** 2
     cp2 = drv.pspace.CDPSpace(p2)
     x = cp2.symbol
-    r2 = drv.real.RDRV('r', cp2, x ** 3 - 7)
+    r2 = drv.real.RDRV('r', cp2, x - 7)
     assert equal((r1 + r2).mean, r1.mean + r2.mean)
 
     ## Infinite + Finite

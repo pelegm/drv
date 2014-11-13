@@ -8,7 +8,6 @@ Probability spaces.
 import drv.tools
 
 import itertools as it
-import numpy as np
 import warnings
 
 ## Symbolic
@@ -198,7 +197,18 @@ class CDPSpace(DPSpace):
         #n = sympy.Symbol('n', integer=True, nonnegative=True)
         n = self.symbol
         summand = func * self.p(n)
-        _sum = sympy.Sum(summand, (n, 0, oo)).doit()
+
+        try:
+            _sum = sympy.Sum(summand, (n, 0, oo)).doit()
+
+        ## Bug
+        except ValueError:
+            msg = "ValueError bug."
+            msg += " Tried to sum {summand}"
+            msg += " with respect to {n}"
+            msg += " from 0 to oo; func was {func} (type {tf})"
+            print msg.format(summand=summand, n=n, func=func, tf=type(func))
+            raise
 
         ## Sum is still a sum, we need to evalf it
         if type(_sum) is sympy.Sum:
@@ -235,8 +245,7 @@ class CDPSpace(DPSpace):
         p = self.p(n)
         sym_sum = -sympy.Sum(p * sympy.log(p), (n, 0, sympy.oo)).doit()
         _sum = sym_sum.evalf(n=self.precision)
-        f_sum = float(_sum)
-        return f_sum
+        return _sum
 
 
 class FDPSpace(CDPSpace):
@@ -330,7 +339,8 @@ class ProductDPSpace(DPSpace):
         """ Return the probability of the outcome *w*. """
         if len(ws) != len(self.pspaces):
             return 0.
-        return np.prod([pspace.p(w) for pspace, w in zip(self.pspaces, ws)])
+        return sympy.Product([pspace.p(w)
+                              for pspace, w in zip(self.pspaces, ws)]).doit()
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure

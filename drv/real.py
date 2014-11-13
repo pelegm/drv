@@ -11,7 +11,6 @@ import drv.pspace
 import drv.rv
 
 ## Math
-import numpy as np
 import sympy
 
 
@@ -25,7 +24,11 @@ PPF_DOMAIN = "A PPF is defined on (0,1] only."
 Zero = sympy.S.Zero
 Half = sympy.S.Half
 One = sympy.S.One
-inf = float('inf')
+
+
+## Methods
+exp = sympy.exp
+log = sympy.log
 
 
 class RDRV(drv.rv.DRV):
@@ -103,15 +106,10 @@ class RDRV(drv.rv.DRV):
 
     def mgf(self, t):
         """ Return the moment-generating function at *t*. """
-        return self.pspace.integrate(sympy.exp(t * self.func))
-        # return self.pspace.integrate(lambda x: sympy.exp(t * self.eval(x)))
+        return self.pspace.integrate(exp(t * self.func))
 
     def _moment_func(self, n, c=Zero, s=One):
         return ((self.func - c) / s) ** n
-
-        # def mfunc(*x):
-            # return ((self.eval(*x) - c) / s) ** n
-        # return mfunc
 
     def moment(self, n):
         """ Return the *n*'th raw moment. """
@@ -142,11 +140,11 @@ class RDRV(drv.rv.DRV):
 
     def logcdf(self, k):
         """ Return the log of the cumulative distribution function at *k*. """
-        return np.log(self.cdf(k))
+        return log(self.cdf(k))
 
     def logsf(self, k):
         """ Return the log of the survival function at *k*. """
-        return np.log(self.sf(k))
+        return log(self.sf(k))
 
     ## ----- Operations ----- ##
 
