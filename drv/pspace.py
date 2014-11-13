@@ -13,7 +13,6 @@ import warnings
 
 ## Symbolic
 import sympy
-import sympy.mpmath
 sympify = sympy.sympify
 
 
@@ -93,15 +92,39 @@ class DPSpace(object):
 
     The following assumptions are made:
 
-    1. The sample space is some discrete countable space
+    1. The sample space is some discrete countable (or finite) space
     2. The events set is the power set of Omega; however, we allow the
        probability function P raise NotImplementedError for events for which
        the probability calculation is difficult
     3. The probability function P is described (by default) by the probability
        function p which is a defined as p(k) = P({k}).
 
+    In addition, every probability space holds a symbol (or more than one).
+    Whenever a pspace is being asked for a probability of an outcome, it may be
+    asked for the probability of a map of symbols to outcomes.
+
     """
-    is_finite = False
+    is_finite = None
+    _pspace_counter = it.count()
+    _symbol_assumptions = {}
+
+    def __init__(self):
+        self._register()
+
+    def _register(self):
+        self.symbol = sympy.Symbol(
+            "omega_{}".format(self._pspace_counter.next()),
+            **self._symbol_assumptions)
+
+    ## Remove?
+    @property
+    def pspaces(self):
+        return frozenset([self])
+
+    ## Remove?
+    @property
+    def symbols(self):
+        return frozenset(pspace.symbol for pspace in self.pspaces)
 
     @property
     def Omega(self):
@@ -122,10 +145,6 @@ class DPSpace(object):
     def p(self, w):
         """ Return the probability of the outcome *w*. """
         raise NotImplementedError
-
-    @property
-    def pspaces(self):
-        return self,
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
@@ -156,7 +175,7 @@ class CDPSpace(DPSpace):
 
     Thus, to create a :class:`CDPSpace`, one only needs to provide the
     probability function p. """
-    _pspace_counter = it.count()
+    _symbol_assumptions = {'integer': True, 'nonnegative': True}
 
     def __init__(self, p, precision=10):
         """ Keep the probability function p, but normalize it first, using the
@@ -165,26 +184,20 @@ class CDPSpace(DPSpace):
         self._register()
 
         self.precision = precision
+        ## TODO: remove the precision thing
         self.p = _normalize(p, precision=self.precision, strict=False)
-        # self.p = p
-
-    def _register(self):
-        self.symbol = sympy.Symbol("ps:{}".format(self._pspace_counter.next()),
-                                   integer=True, nonnegative=True)
 
     def integrate(self, func):
         """ Integrate *func* with respect to the probability measure
-        represented by the probability space.
-
-        It is assumed that *func* is a function of natural numbers. If it is
-        not, its restriction to the naturals is taken into consideration. """
+        represented by the probability space. """
         ## We need to return \int_{\Omega} f dp
         ## In the countable discrete case, this is simply the following
         ## infinite sum: \sum_{n=0}^\infty f(n)p(n)
 
         ## We try a symbolic summation
-        n = sympy.Symbol('n', integer=True, nonnegative=True)
-        summand = func(n) * self.p(n)
+        #n = sympy.Symbol('n', integer=True, nonnegative=True)
+        n = self.symbol
+        summand = func * self.p(n)
         _sum = sympy.Sum(summand, (n, 0, oo)).doit()
 
         ## Sum is still a sum, we need to evalf it
@@ -193,7 +206,7 @@ class CDPSpace(DPSpace):
             ## This occasionaly fails due to various SymPy bugs
             ## See for example https://github.com/sympy/sympy/issues/8254
             try:
-                _sum = sym_sum.evalf()
+                _sum = _sum.evalf()
             except TypeError:
                 raise NotImplementedError("SymPy bug #8254.")
 
@@ -205,9 +218,12 @@ class CDPSpace(DPSpace):
         if _sum.is_real:
             return _sum
 
-        if sympy.mpmath.isnan(float(_sum)):
-            raise NotImplementedError("nan bug. Tried to sum: {}".format(
-                summand))
+        if _sum is sympy.nan:
+            msg = "nan bug."
+            msg += " Tried to sum {summand}"
+            msg += " with respect to {n}"
+            msg += " from 0 to oo"
+            raise NotImplementedError(msg.format(summand=summand, n=n))
 
         raise NotImplementedError("Couldn't integrate. Got: {}".format(_sum))
 
@@ -239,16 +255,13 @@ class FDPSpace(CDPSpace):
     a finite iterable of values, which correspond to the probabilities of
     Omega. """
     is_finite = True
+    Omega = frozenset()
 
     def __init__(self, ps):
         ## Register
         self._register()
 
-        self._Omega, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
-
-    @property
-    def Omega(self):
-        return set((w,) for w in self._Omega)
+        self.Omega, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
 
     @property
     def F(self):
@@ -277,12 +290,8 @@ class FDPSpace(CDPSpace):
         ## We need to return \int_{\Omega} f dp
         ## In the finite discrete case, this is simply the following finite
         ## sum: \sum_{w=0}^{n-1} f(w)p(w), where n is the length of 'ps'
-        try:
-            return sum(func(*w) * self.p(*w) for w in self.Omega)
-        except AttributeError:
-            print func, func(0), func(sympify(0)), func(sympify(1))
-            print self.p, self.p(0), self.p(sympify(0)), self.p(sympify(1))
-            raise
+        n = self.symbol
+        return sum(func.subs(n, w) * self.p(w) for w in self.Omega)
 
 
 class DegeneratePSpace(FDPSpace):
@@ -302,6 +311,8 @@ class ProductDPSpace(DPSpace):
     def __init__(self, *pspaces):
         self.pspaces = pspaces
         self.is_finite = all(pspace.is_finite for pspace in pspaces)
+
+        self.symbol = tuple(pspace.symbol for pspace in self.pspaces)
 
     @property
     def Omega(self):
@@ -325,17 +336,9 @@ class ProductDPSpace(DPSpace):
         """ Integrate *func* with respect to the probability measure
         represented by the probability space. """
         ## Try: symbolic integration, one pspace after another
-        symbols = (pspace.symbol for pspace in self.pspaces)
-        expr = func(*symbols)
+        expr = func
         for pspace in self.pspaces:
-            _func = sympy.Lambda(pspace.symbol, expr)
-            expr = pspace.integrate(_func)
+            expr = pspace.integrate(expr)
 
         return expr
-
-        if not self.is_finite:
-            raise NotImplementedError
-
-        ## If the product pspace is finite, we integrate normally
-        return sum(func(*w) * self.p(*w) for w in self.Omega)
 

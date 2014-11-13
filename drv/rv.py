@@ -13,7 +13,17 @@ import sympy
 
 
 ## Symbolic tools
-indicator = lambda c: sympy.sympify(1) if c else sympy.sympify(0)
+x = sympy.Symbol('x')
+Lambda = sympy.Lambda
+Piecewise = sympy.Piecewise
+
+
+def cumulative(v):
+    return Lambda(x, sympy.Piecewise((1, x <= v, (0, True))))
+
+
+def indicator(v):
+    return Lambda(x, sympy.Piecewise((1, sympy.Eq(x, v)), (0, True)))
 
 
 class DRV(object):
@@ -28,7 +38,16 @@ class DRV(object):
     def __init__(self, name, pspace, func):
         self.name = name
         self.pspace = pspace
-        self.func = func
+        try:
+            self.func = sympy.sympify(func)
+        except sympy.SympifyError:
+            raise ValueError("Could not sympify {}".format(func))
+
+    def eval(self, wm):
+        """ Evaluate self's function on the (ordered) input *w*. """
+        if not isinstance(wm, dict):
+            wm = {self.pspace.symbol: wm}
+        return self.func.subs(wm)
 
     def sfunc(self, sample):
         """ Return the result of ``func`` on the sampled data, where *sample*
@@ -80,8 +99,9 @@ class DRV(object):
 
     def pmf(self, k):
         """ Return the probability mass function at *k*. """
-        ind = lambda *w: indicator(self.func(*w) == k)
-        return self.pspace.integrate(ind)
+        # ind = lambda w: indicator(self.eval(w) == k)
+        # return self.pspace.integrate(ind)
+        return self.pspace.integrate(indicator(k)(self.func))
 
     ## ----- Operations ----- ##
 
@@ -104,7 +124,8 @@ class DRV(object):
         """ Return a random variable whose values are the application of
         *function* to self's values. """
         klass = klass or self.__class__
-        func = lambda x: function(self.func(x))
+        # func = lambda x: function(self.func(x))
+        func = function(self.func)
         _drv = klass(name, self.pspace, func)
         if not flatten:
             return _drv
@@ -137,8 +158,8 @@ class FDRV(DRV):
     @property
     def support(self):
         """ The values at which the probability mass function is positive. """
-        return set([self.func(*w) for w in self.pspace.Omega
-                    if self.pspace.p(*w) > 0])
+        return set([self.eval(w) for w in self.pspace.Omega
+                    if self.pspace.p(w) > 0])
 
     ## ----- Probability Inverse Methods ----- ##
 

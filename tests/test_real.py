@@ -6,6 +6,7 @@ Testing the real module.
 
 ## Test tools
 import pytest
+bench = pytest.mark.bench
 slow = pytest.mark.slow
 
 ## Testee
@@ -53,13 +54,15 @@ def test_max():
     ## Finite, non-tricky
     ps = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
     fp = drv.pspace.FDPSpace(ps)
-    fr = drv.real.FRDRV('fr', fp, lambda x: x ** 2)
+    square = fp.symbol ** 2
+    fr = drv.real.FRDRV('fr', fp, square)
     assert equal(fr.max, (len(ps) - 1) ** 2)
 
     ## Finite, tricky
     ps = [1, 1, 2, 3, 5, 0, 13, 21, 34, 0]
     fp = drv.pspace.FDPSpace(ps)
-    fr = drv.real.FRDRV('fr', fp, lambda x: x ** 2)
+    square = fp.symbol ** 2
+    fr = drv.real.FRDRV('fr', fp, square)
     assert equal(fr.max, (len(ps) - 2) ** 2)
 
 
@@ -69,13 +72,13 @@ def test_mean():
     ## This doesn't work: see #9
     p = lambda n: 1 if n == 0 else 0
     cp = drv.pspace.CDPSpace(p)
-    r = drv.real.RDRV('r', cp, lambda x: 12 - x)
+    r = drv.real.RDRV('r', cp, 12 - cp.symbol)
     assert equal(r.mean, 12)
 
     ## Infinite, but constant
     p = lambda n: 1. / (n + 1) ** 2
     cp = drv.pspace.CDPSpace(p)
-    r = drv.real.RDRV('r', cp, lambda x: 7)
+    r = drv.real.RDRV('r', cp, 7)
     assert equal(r.mean, 7)
 
     ## TODO: add relevant tests
@@ -91,13 +94,15 @@ def test_min():
     ## Finite, non-tricky
     ps = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
     fp = drv.pspace.FDPSpace(ps)
-    fr = drv.real.FRDRV('fr', fp, lambda x: x ** 2 + 7)
+    x = fp.symbol
+    fr = drv.real.FRDRV('fr', fp, x ** 2 + 7)
     assert equal(fr.min, 7)
 
     ## Finite, tricky
     ps = [0, 1, 2, 3, 5, 0, 13, 21, 34, 0]
     fp = drv.pspace.FDPSpace(ps)
-    fr = drv.real.FRDRV('fr', fp, lambda x: x ** 2 + 7)
+    x = fp.symbol
+    fr = drv.real.FRDRV('fr', fp, x ** 2 + 7)
     assert equal(fr.min, 8)
 
 
@@ -120,7 +125,8 @@ def test_moment():
     ## Infinite
     p = lambda n: 1. / (n + 1) ** 2
     cp = drv.pspace.CDPSpace(p)
-    r = drv.real.RDRV('r', cp, lambda x: x ** 2)
+    x = cp.symbol
+    r = drv.real.RDRV('r', cp, x ** 2)
 
     ## MGF at 0 is always 1
     assert equal(r.mgf(0), 1)
@@ -128,7 +134,8 @@ def test_moment():
     ## Finite
     ps = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
     fp = drv.pspace.FDPSpace(ps)
-    fr = drv.real.FRDRV('fr', fp, lambda x: x ** 2)
+    x = fp.symbol
+    fr = drv.real.FRDRV('fr', fp, x ** 2)
 
     ## MGF at 0 is always 1
     assert equal(fr.mgf(0), 1)
@@ -157,7 +164,8 @@ def test_abs_properties():
     ## Infinite
     p = lambda n: 1. / (n + 1) ** 2
     cp = drv.pspace.CDPSpace(p)
-    r = drv.real.RDRV('r', cp, lambda x: x ** 3 - 15 * x)
+    x = cp.symbol
+    r = drv.real.RDRV('r', cp, x ** 3 - 15 * x)
     abs_r = abs(r)
     assert surely(-abs_r <= r)
     assert surely(r <= abs_r)
@@ -166,22 +174,26 @@ def test_linearity_of_expectation():
     ## Infinite + Infinite
     p1 = lambda n: 1. / (n + 1) ** 2
     cp1 = drv.pspace.CDPSpace(p1)
-    r1 = drv.real.RDRV('r', cp1, lambda x: x ** 2)
+    x = cp1.symbol
+    r1 = drv.real.RDRV('r', cp1, x ** 2)
     p2 = lambda n: 1. / (n + 11) ** 2
     cp2 = drv.pspace.CDPSpace(p2)
-    r2 = drv.real.RDRV('r', cp2, lambda x: x ** 3 - 7)
+    x = cp2.symbol
+    r2 = drv.real.RDRV('r', cp2, x ** 3 - 7)
     assert equal((r1 + r2).mean, r1.mean + r2.mean)
 
     ## Infinite + Finite
     ps1 = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
     fp1 = drv.pspace.FDPSpace(ps1)
-    fr1 = drv.real.FRDRV('fr', fp1, lambda x: x ** 2 + 7)
+    x = fp1.symbol
+    fr1 = drv.real.FRDRV('fr', fp1, x ** 2 + 7)
     assert equal((r1 + fr1).mean, r1.mean + fr1.mean)
 
     ## Finite + Finite
     ps2 = [1, 1, 2, 0, 5, 8, 13, 0, 34, 0]
     fp2 = drv.pspace.FDPSpace(ps2)
-    fr2 = drv.real.FRDRV('fr', fp2, lambda x: x ** 3 - 6)
+    x = fp2.symbol
+    fr2 = drv.real.FRDRV('fr', fp2, x ** 3 - 6)
     assert equal((fr1 + fr2).mean, fr1.mean + fr2.mean)
 
 
@@ -189,24 +201,28 @@ def test_independence_expectation():
     ## Infinite * Infinite
     p1 = lambda n: 1. / (n + 1) ** 2
     cp1 = drv.pspace.CDPSpace(p1)
-    r1 = drv.real.RDRV('r', cp1, lambda x: x ** 2)
+    x = cp1.symbol
+    r1 = drv.real.RDRV('r', cp1, x ** 2)
     p2 = lambda n: 1. / (n + 11) ** 2
     cp2 = drv.pspace.CDPSpace(p2)
-    r2 = drv.real.RDRV('r', cp2, lambda x: x ** 3 - 7)
+    x = cp2.symbol
+    r2 = drv.real.RDRV('r', cp2, x ** 3 - 7)
     ## TODO: not implemented
     #assert equal((r1 * r2).mean, r1.mean * r2.mean)
 
     ## Infinite * Finite
     ps1 = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
     fp1 = drv.pspace.FDPSpace(ps1)
-    fr1 = drv.real.FRDRV('fr', fp1, lambda x: x ** 2 + 7)
+    x = fp1.symbol
+    fr1 = drv.real.FRDRV('fr', fp1, x ** 2 + 7)
     ## TODO: something doesn't work here
     #assert equal((r1 + fr1).mean, r1.mean + fr1.mean)
 
     ## Finite * Finite
     ps2 = [1, 1, 2, 0, 5, 8, 13, 0, 34, 0]
     fp2 = drv.pspace.FDPSpace(ps2)
-    fr2 = drv.real.FRDRV('fr', fp2, lambda x: x ** 3 - 6)
+    x = fp2.symbol
+    fr2 = drv.real.FRDRV('fr', fp2, x ** 3 - 6)
     assert equal((fr1 * fr2).mean, fr1.mean * fr2.mean)
 
 
@@ -271,7 +287,7 @@ def test_real_bernoulli():
         pspace = drv.pspace.FDPSpace(ps)
 
         ## RV
-        rv = drv.real.FRDRV('bernoulli', pspace, I)
+        rv = drv.real.FRDRV('bernoulli', pspace, pspace.symbol)
 
         ## Properties
         assert rv.entropy == -q * ln(q) - p * ln(p)
@@ -304,6 +320,7 @@ def test_real_bernoulli():
         assert rv.mgf(t).equals(q + p * exp(t))
 
 
+#@bench("drv.real.FRDRV", iterations=1)
 def test_real_binomial():
     ns = sympy.sympify([1, 5, 100])
     ps = [Half / 2, Half, Half + Half / 2]
@@ -311,7 +328,7 @@ def test_real_binomial():
         q = 1 - p
         pmf = lambda k: binomial(n, k) * p ** k * q ** (n - k)
         pspace = drv.pspace.FDPSpace([pmf(k) for k in xrange(n + 1)])
-        rv = drv.real.FRDRV('binomial', pspace, I)
+        rv = drv.real.FRDRV('binomial', pspace, pspace.symbol)
 
         ## Entropy is too complex so we skip it
         assert rv.kurtosis == (1 - 6 * p * q) / (n * p * q)
@@ -337,7 +354,7 @@ def test_real_uniform():
         b = a + n - 1
         ps = [1] * n
         pspace = drv.pspace.FDPSpace(ps)
-        func = lambda w: w + a
+        func = pspace.symbol + a
         rv = drv.real.FRDRV('uniform', pspace, func)
 
         assert rv.entropy == ln(n)
