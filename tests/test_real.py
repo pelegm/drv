@@ -321,6 +321,7 @@ def test_real_bernoulli():
 
 
 #@bench("drv.real.FRDRV", iterations=1)
+@slow
 def test_real_binomial():
     ns = sympy.sympify([1, 5, 100])
     ps = [Half / 2, Half, Half + Half / 2]

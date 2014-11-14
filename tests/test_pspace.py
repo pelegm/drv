@@ -83,8 +83,8 @@ def test_product_pspace_integration():
     ## For infinite pspaces, this is not implemented
     x, y = fdps3.symbol, fdps4.symbol
     func = x + y
-    func_1 = k1 + fdps4.integrate(y)
-    func_2 = k2 + fdps3.integrate(x)
+    func_1 = x + fdps4.integrate(y)
+    func_2 = y + fdps3.integrate(x)
     # func = lambda k1, k2: k1 + k2
     # func_1 = lambda k1: k1 + fdps4.integrate(lambda k2: k2)
     # func_2 = lambda k2: k2 + fdps3.integrate(lambda k1: k1)

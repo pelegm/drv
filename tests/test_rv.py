@@ -13,6 +13,7 @@ import drv.rv
 
 ## Symbolic
 import sympy
+from drv.functions import identity, Lambda, x, discrete_function
 
 
 ## Set data sets
@@ -32,13 +33,13 @@ pdps = [drv.pspace.ProductDPSpace(*pss) for pss in
 
 
 ## Set random variables
-I = lambda x: x
-f = lambda x: (x % 5) ** 2
-cat_f = lambda w: cat_data[w]
-drv_ = drv.rv.DRV('drv', dps, I)
-cdrv = drv.rv.DRV('cdrv', cdps, I)
+f = Lambda(x, (x % 5) ** 2)
+cat_f = discrete_function(dict(enumerate(cat_data)))
+drv_ = drv.rv.DRV('drv', dps, identity(dps.symbol))
+cdrv = drv.rv.DRV('cdrv', cdps, identity(cdps.symbol))
 cdrv_f = drv.rv.DRV('cdrv', cdps, f)
-fdrv = [drv.rv.FDRV('fdrv{}'.format(n), ps, I) for n, ps in enumerate(fdps)]
+fdrv = [drv.rv.FDRV('fdrv{}'.format(n), ps, identity(ps.symbol))
+        for n, ps in enumerate(fdps)]
 fdrv_f = [drv.rv.FDRV('fdrv{}'.format(n), ps, f) for n, ps in enumerate(fdps)]
 cat_rv = drv.rv.FDRV('cat_rv', fdps[0], cat_f)
 

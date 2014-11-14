@@ -4,6 +4,7 @@
 
 ## Tools
 import operator as op
+from drv.functions import sqrt
 import drv.tools as tools
 
 ## Framework
@@ -85,7 +86,7 @@ class RDRV(drv.rv.DRV):
     @property
     def std(self):
         """ The standard deviation of the random variable. """
-        return self.variance ** Half
+        return sqrt(self.variance)
 
     @property
     def variance(self):
@@ -178,7 +179,7 @@ class RDRV(drv.rv.DRV):
 
         ## We know how to handle it
         ## Create the relevant product pspace
-        pspaces = self.pspace.pspaces | other.pspace.pspaces
+        pspaces = self.pspace.pspaces + other.pspace.pspaces
         pspace = drv.pspace.ProductDPSpace(*pspaces)
 
         ## Reverse if needed
@@ -189,12 +190,6 @@ class RDRV(drv.rv.DRV):
 
         ## Create the new func
         func = operator(a.func, b.func)
-        # def func(*ks):
-            # if len(ks) != len(pspaces):
-                # raise ValueError("{} pspaces and {} ks".format(len(pspaces),
-                    # len(ks)))
-            # sample = dict(zip(pspace.pspaces, ks))
-            # return operator(a.sfunc(sample), b.sfunc(sample))
 
         klass = klass or self.__class__
         _drv = klass(name, pspace, func)

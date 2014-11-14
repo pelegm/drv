@@ -13,6 +13,7 @@ import sympy
 
 
 ## Symbolic tools
+from drv.functions import x, Lambda, Piecewise, indicator
 x = sympy.Symbol('x')
 Lambda = sympy.Lambda
 Piecewise = sympy.Piecewise
@@ -20,10 +21,6 @@ Piecewise = sympy.Piecewise
 
 def cumulative(v):
     return Lambda(x, sympy.Piecewise((1, x <= v, (0, True))))
-
-
-def indicator(v):
-    return Lambda(x, sympy.Piecewise((1, sympy.Eq(x, v)), (0, True)))
 
 
 class DRV(object):
@@ -34,14 +31,25 @@ class DRV(object):
     function from that probability space into some outcome set, which is
     usually, but not always, the set of reals.
 
-    A DRV comes with a *name*, which identifies the variable. """
+    A DRV comes with a *name*, which identifies the variable. In the future,
+    this may be required to be unique. A DRV construction also involves a
+    *pspace*, a relevant probability space, and a *func*, which is a symbolic
+    expression, involving (possibly) the pspace's symbol. """
     def __init__(self, name, pspace, func):
         self.name = name
         self.pspace = pspace
+
+        ## The expression may be a basic python type; we make sure it is a
+        ## symbolic expression
         try:
             self.func = sympy.sympify(func)
         except sympy.SympifyError:
             raise ValueError("Could not sympify {}".format(func))
+
+    def eval(self, sample):
+        """ Return the substitution result of the sample *s* (which is an
+        pair of (symbols,outcomes) iterables) in self's func. """
+        return self.func.subs(zip(*sample))
 
     def sfunc(self, sample):
         """ Return the result of ``func`` on the sampled data, where *sample*
@@ -152,8 +160,13 @@ class FDRV(DRV):
     @property
     def support(self):
         """ The values at which the probability mass function is positive. """
-        return set([self.eval(w) for w in self.pspace.Omega
-                    if self.pspace.p(w) > 0])
+        ## The probability space provides a .samples method which returns all
+        ## samples; each sample is a pair of (symbols,outcomes) iterables
+        sup = set()
+        for w in self.pspace.Omega:
+            if self.pspace.p(*w) > 0:
+                sup.add(self.eval((self.pspace.symbols, w)))
+        return frozenset(sup)
 
     ## ----- Probability Inverse Methods ----- ##
 

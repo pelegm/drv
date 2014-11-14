@@ -5,6 +5,7 @@ Probability spaces.
 """
 
 ## Tools
+import drv.functions
 import drv.tools
 
 import itertools as it
@@ -115,15 +116,13 @@ class DPSpace(object):
             "omega_{}".format(self._pspace_counter.next()),
             **self._symbol_assumptions)
 
-    ## Remove?
     @property
     def pspaces(self):
-        return frozenset([self])
+        return self,
 
-    ## Remove?
     @property
     def symbols(self):
-        return frozenset(pspace.symbol for pspace in self.pspaces)
+        return [pspace.symbol for pspace in self.pspaces]
 
     @property
     def Omega(self):
@@ -141,7 +140,7 @@ class DPSpace(object):
         ## TODO: implement infinite events
         return sum(self.p(w) for w in event)
 
-    def p(self, w):
+    def p(self, *w):
         """ Return the probability of the outcome *w*. """
         raise NotImplementedError
 
@@ -194,7 +193,6 @@ class CDPSpace(DPSpace):
         ## infinite sum: \sum_{n=0}^\infty f(n)p(n)
 
         ## We try a symbolic summation
-        #n = sympy.Symbol('n', integer=True, nonnegative=True)
         n = self.symbol
         summand = func * self.p(n)
 
@@ -264,24 +262,45 @@ class FDPSpace(CDPSpace):
     a finite iterable of values, which correspond to the probabilities of
     Omega. """
     is_finite = True
-    Omega = frozenset()
 
     def __init__(self, ps):
+        ## Verify none of the ps is negative
+        if min(ps) < 0:
+            raise ValueError(NEG_PROB)
+
+        ## Sympify
+        s_ps = sympify(ps)
+
+        psum = sum(s_ps)
+        if not psum:
+            raise ValueError(ZERO_PROB)
+
+        n_ps = [p / psum for p in s_ps]
+
         ## Register
         self._register()
 
-        self.Omega, self.ps = drv.tools.unzip(enumerate(_f_normalize(ps)))
+        self._Omega, self.ps = drv.tools.unzip(enumerate(n_ps))
+        p = drv.functions.discrete_function(dict(enumerate(self.ps)))
+        self._p = p(self.symbol)
+
+    @property
+    def Omega(self):
+        return frozenset([(w,) for w in self._Omega])
 
     @property
     def F(self):
         return set(drv.tools.powerset(self.Omega))
 
-    def p(self, w):
-        """ Return the probability of the outcome *w*. """
-        try:
-            return self.ps[w]
-        except IndexError:
-            return 0
+    def p(self, *w):
+        return self._p.subs(zip(self.symbols, w))
+
+    # def p(self, w):
+        # """ Return the probability of the outcome *w*. """
+        # try:
+            # return self.ps[w]
+        # except IndexError:
+            # return 0
 
     @property
     def entropy(self):
@@ -299,8 +318,8 @@ class FDPSpace(CDPSpace):
         ## We need to return \int_{\Omega} f dp
         ## In the finite discrete case, this is simply the following finite
         ## sum: \sum_{w=0}^{n-1} f(w)p(w), where n is the length of 'ps'
-        n = self.symbol
-        return sum(func.subs(n, w) * self.p(w) for w in self.Omega)
+        return sum(func.subs(zip(self.symbols, w)) * self.p(*w)
+                   for w in self.Omega)
 
 
 class DegeneratePSpace(FDPSpace):
