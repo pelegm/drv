@@ -20,7 +20,7 @@ from drv.functions import identity, Lambda, x, discrete_function
 cfunc2 = lambda n: 1 / (n + 1) ** 2
 fdata = [range(1, 6), range(2, 5), [1, 1, 2, 3, 5, 8, 13, 21, 34, 55],
          [1, 1, 2, 0, 5, 8, 13, 0, 34, 0]]
-cat_data = [None, (1,), False, frozenset([2, 3]), int]
+cat_data = [1, (1,), ((1,),), (((1,),),), ()]
 
 
 ## Set probability spaces
@@ -41,7 +41,7 @@ cdrv_f = drv.rv.DRV('cdrv', cdps, f)
 fdrv = [drv.rv.FDRV('fdrv{}'.format(n), ps, identity(ps.symbol))
         for n, ps in enumerate(fdps)]
 fdrv_f = [drv.rv.FDRV('fdrv{}'.format(n), ps, f) for n, ps in enumerate(fdps)]
-cat_rv = drv.rv.FDRV('cat_rv', fdps[0], cat_f)
+cat_rv = drv.rv.FDRV('cat_rv', fdps[0], cat_f(fdps[0].symbol))
 
 
 ################################################
@@ -51,7 +51,7 @@ cat_rv = drv.rv.FDRV('cat_rv', fdps[0], cat_f)
 def test_categorial_pdf():
     ## Finite, categorial
     n = sum(fdata[0])
-    assert cat_rv.pmf(str) == 0
+    assert cat_rv.pmf((())) == 0
     for i, cat in enumerate(cat_data):
         assert cat_rv.pmf(cat) == sympy.Rational(i + 1, n)
 
