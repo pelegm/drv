@@ -14,6 +14,7 @@ import warnings
 ## Symbolic
 import sympy
 sympify = sympy.sympify
+from drv.functions import sign
 
 
 ## Messages
@@ -220,7 +221,7 @@ class CDPSpace(DPSpace):
 
         ## Sum is infinite, we should return it
         if _sum.is_infinite:
-            return _sum
+            return oo * sign(_sum)
 
         ## Sum is real, we should return it
         if _sum.is_real:
