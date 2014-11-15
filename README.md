@@ -1,4 +1,4 @@
-**NOTE:** This package is undergoing serious changes now. It will become symbolic, and will handle dependet random variables. This might take a while, though.
+**NOTE:** This package is undergoing serious changes now. It will become symbolic, and will handle dependent random variables. This might take a while, though.
 
 # DRV
 
