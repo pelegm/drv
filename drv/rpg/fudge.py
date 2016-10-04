@@ -4,11 +4,11 @@
 
 ## Framework
 import drv.core
-import drv.game.base
+import drv.dice.base
 
 ## Sugar
 POOL = drv.core.RandomVariablePool
-dk = drv.game.base.dk
+dk = drv.dice.base.dk
 
 
 ## Fudge dice notation is according to Wikipedia

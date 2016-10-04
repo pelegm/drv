@@ -7,10 +7,10 @@ mechanics.
 """
 
 ## Framework
-import drv.game.base
+import drv.dice.base
 
 ## Sugar
-dk = drv.game.base.dk
+dk = drv.dice.base.dk
 
 
 ## This dice is used, according to Wikipedia, in Necromunda and Mordheim
