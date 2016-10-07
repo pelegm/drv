@@ -146,14 +146,14 @@ class MemoryReduceOperator(ReduceOperator):
         for drv in pool.drvs:
             xs = [self.cast(x) for x in drv.xs]
             ps = drv.ps
-            drvs.append(BareDiscreteRandomVariable(xs, ps))
+            drvs.append(BareDiscreteRandomVariable('', xs, ps))
 
         return drvs
 
-    def _pack(self, drv):
+    def _pack(self, drv, name):
         xs = [int(self.uncast(x)) for x in drv.xs]
         ps = drv.ps
-        return DiscreteRandomVariable(drv.name, xs=xs, ps=ps)
+        return DiscreteRandomVariable(name, xs=xs, ps=ps)
 
     force_int = False
 
@@ -181,6 +181,7 @@ sum_op = ReduceOperator(sum, 0)
 neg_op = IndexedOperator(op.neg, [0])
 sub_op = IndexedOperator(op.sub, [0, 1], unpack=True)
 mul_op = ReduceOperator(np.prod, 1)
+pow_op = IndexedOperator(np.power, [0, 1], unpack=True)
 
 ## Max/Min
 max_op = ReduceOperator(max)
@@ -196,7 +197,7 @@ cmp_op = IndexedOperator(cmp, [0, 1], unpack=True)
 
 ## n'th highest
 def _tuple(n):
-    """ Return a function which casts a value into a padded tuple.count """
+    """ Return a function which casts a value into a padded tuple. """
     def helper(x, n=n):
         return tuple([x] + [None] * (n - 1))
     return helper
@@ -210,13 +211,23 @@ def _get_n_highest(n):
         highest = sorted(merged)[-n:]
         if len(highest) < n:
             highest += [None] * (n - len(highest))
-        return highest
+        return tuple(highest)
+    return n_highest
 
 
 def nth_highest(n):
     """ Return an operator which returns the n'th highest result. """
     mro = MemoryReduceOperator(cast=_tuple(n), uncast=min,
                                operator=_get_n_highest(n), unpack=True)
+    return mro
+
+
+def keep_and_sum(n):
+    """ Return an operator which returns the sum of the *n* highest results.
+    """
+    mro = MemoryReduceOperator(cast=_tuple(n), uncast=sum,
+                               operator=_get_n_highest(n), unpack=True)
+    return mro
 
 
 ##############################
@@ -231,8 +242,196 @@ class BareDiscreteRandomVariable(object):
         self.xs = xs
         self.ps = ps
 
+    @property
+    def values(self):
+        """ The (value, probability) pairs of the random variable. """
+        return zip(self.xs, self.ps)
 
-class DiscreteRandomVariable(object):
+
+class BaseDiscreteRandomVariable(object):
+
+    ## ----- Roll Methods ----- ##
+
+    def __call__(self):
+        return self.roll()
+
+    def _roll(self):
+        """ Return a result of a single roll. """
+        raise NotImplementedError
+
+    def roll(self, n=None):
+        """ Roll *n* times, if *n* is given, or else a single time; return the
+        results as a list, if *n* is given, or as a single value otherwise. """
+        if n is None:
+            return self._roll()
+
+        return list(self.rolls_gen(n=n))
+
+    def rolls_gen(self, n=None):
+        """ Return a generator of rolls. If *n* is given, limit the number of
+        rolls by *n*. """
+        if n is None:
+            n = inf
+        c = 0
+        while c < n:
+            c += 1
+            yield self._roll()
+
+    ## ----- Probability Methods ----- ##
+
+    def cdf(self, k):
+        """ Return the cumulative distribution function at *k*. """
+        raise NotImplementedError
+
+    def expectation(self, func):
+        """ Return the expected value of a function *func* with respect to the
+        distribution of the random variable. *func* should be a function of one
+        argument. """
+        raise NotImplementedError
+
+    def interval(self, alpha):
+        """ Return the symmetric confidence interval (with parameter *alpha*)
+        around the median. *alpha* must be in [0,1]. """
+        raise NotImplementedError
+
+    def moment(self, n):
+        """ Return the n'th non-central moment of the random variable. """
+        raise NotImplementedError
+
+    def pmf(self, k):
+        """ Return the probability mass function at *k*. """
+        raise NotImplementedError
+
+    def pr(self, event):
+        """ Return the probability of *event*; *event* is a boolean function of
+        the value of the random variable. This is a synonym of ``expectation``.
+        """
+        raise NotImplementedError
+
+    def sf(self, k):
+        """ Return the survival function at *k*. """
+        raise NotImplementedError
+
+    ## ----- Probability Inverse Methods ----- ##
+
+    def isf(self, q):
+        """ Return the inverse survival function at *q*. """
+        raise NotImplementedError
+
+    def ppf(self, q):
+        """ Return the percent point function (inverse CDF) at *q*. """
+        raise NotImplementedError
+
+    ## ----- Probability Log Methods ----- ##
+
+    def logcdf(self, k):
+        """ Return the log of the cumulative distribution function at *k*. """
+        raise NotImplementedError
+
+    def logpmf(self, k):
+        """ Return the log of the probability mass function at *k*. """
+        raise NotImplementedError
+
+    def logsf(self, k):
+        """ Return the log of the survival function at *k*. """
+        raise NotImplementedError
+
+    ## ----- Probability Properties ----- ##
+
+    @property
+    def entropy(self):
+        """ The entropy of the random variable. """
+        raise NotImplementedError
+
+    @property
+    def max(self):
+        """ The maximum value of the random variable. """
+        raise NotImplementedError
+
+    @property
+    def mean(self):
+        """ The mean of the random variable. """
+        raise NotImplementedError
+
+    @property
+    def median(self):
+        """ The median of the random variable. Following SciPy's convention,
+        this is simply the PPF of 0.5 (hence it is unique). """
+        raise NotImplementedError
+
+    @property
+    def min(self):
+        """ The minimum value of the random variable. """
+        raise NotImplementedError
+
+    @property
+    def std(self):
+        """ The standard deviation of the random variable. """
+        raise NotImplementedError
+
+    @property
+    def variance(self):
+        """ The variance of the random variable. """
+        raise NotImplementedError
+
+    ## ----- Statistics ----- ##
+
+    def graph(self, method):
+        """ Return a graph (that is, a pair of x's and y's) of a given method
+        as a function of the random variable's range. """
+        raise NotImplementedError
+
+    ## ----- Arithmetic ----- ##
+
+    def unop(self, operator, name):
+        """ Return a new discrete random variable, which is the result of
+        *operator* on *self*. """
+        raise NotImplementedError
+
+    def binop(self, other, operator, name):
+        """ Return a new discrete random variable, which is the result of
+        *operator* on *self* and *other*. *other* may be an integer, in which
+        case we treat it as a constant random variable. """
+        raise NotImplementedError
+
+    def __add__(self, other):
+        return self.binop(other, sum_op, "({_0.name})+({_1.name})")
+
+    def __and__(self, other):
+        return self.binop(other, min_op, "({_0.name})&({_1.name})")
+
+    def __ge__(self, other):
+        return self.binop(other, ge_op, "({_0.name})>=({_1.name})")
+
+    def __gt__(self, other):
+        return self.binop(other, gt_op, "({_0.name})>({_1.name})")
+
+    def __le__(self, other):
+        return self.binop(other, le_op, "({_0.name})<=({_1.name})")
+
+    def __lt__(self, other):
+        return self.binop(other, lt_op, "({_0.name})<({_1.name})")
+
+    def __mul__(self, other):
+        return self.binop(other, mul_op, "({_0.name})*({_1.name})")
+
+    def __pow__(self, other):
+        return self.binop(other, pow_op, "({_0.name})**({_1.name})")
+
+    def __neg__(self):
+        return self.unop(neg_op, "-({_0.name})")
+
+    def __or__(self, other):
+        return self.binop(other, max_op, "({_0.name})|({_1.name})")
+
+    def __sub__(self, other):
+        return self.binop(other, sub_op, "({_0.name})-({_1.name})")
+
+    def compare(self, other):
+        return self.binop(other, cmp_op, "({_0.name})<>({_1.name})")
+
+
+class DiscreteRandomVariable(BaseDiscreteRandomVariable):
     """ A ``DiscreteRandomVariable`` is a wrapper for a integer-valued discrete
     random variable. """
     def __init__(self, name, rv=None, xs=None, ps=None):
@@ -316,30 +515,9 @@ class DiscreteRandomVariable(object):
 
     ## ----- Roll Methods ----- ##
 
-    def __call__(self):
-        return self.roll()
-
     def _roll(self):
         """ Return a result of a single roll. """
         return self._rv.rvs()
-
-    def roll(self, n=None):
-        """ Roll *n* times, if *n* is given, or else a single time; return the
-        results as a list, if *n* is given, or as a single value otherwise. """
-        if n is None:
-            return self._roll()
-
-        return list(self.rolls_gen(n=n))
-
-    def rolls_gen(self, n=None):
-        """ Return a generator of rolls. If *n* is given, limit the number of
-        rolls by *n*. """
-        if n is None:
-            n = inf
-        c = 0
-        while c < n:
-            c += 1
-            yield self._roll()
 
     ## ----- Probability Methods ----- ##
 
@@ -467,39 +645,6 @@ class DiscreteRandomVariable(object):
         pool = RandomVariablePool(self, other)
         return operator(pool, name)
 
-    def __add__(self, other):
-        return self.binop(other, sum_op, "({_0.name})+({_1.name})")
-
-    def __and__(self, other):
-        return self.binop(other, min_op, "({_0.name})&({_1.name})")
-
-    def __ge__(self, other):
-        return self.binop(other, ge_op, "({_0.name})>=({_1.name})")
-
-    def __gt__(self, other):
-        return self.binop(other, gt_op, "({_0.name})>({_1.name})")
-
-    def __le__(self, other):
-        return self.binop(other, le_op, "({_0.name})<=({_1.name})")
-
-    def __lt__(self, other):
-        return self.binop(other, lt_op, "({_0.name})<({_1.name})")
-
-    def __mul__(self, other):
-        return self.binop(other, mul_op, "{_0.name})*({_1.name})")
-
-    def __neg__(self):
-        return self.unop(neg_op, "-({_0.name})")
-
-    def __or__(self, other):
-        return self.binop(other, max_op, "({_0.name})|({_1.name})")
-
-    def __sub__(self, other):
-        return self.binop(other, sub_op, "({_0.name})-({_1.name})")
-
-    def compare(self, other):
-        return self.binop(other, cmp_op, "({_0.name})<>({_1.name})")
-
 
 class RandomVariablePool(object):
     """ A "pool" is an array of discrete random variables, which may be rolled
@@ -541,10 +686,15 @@ class RandomVariablePool(object):
         rolls is even. """
         raise NotImplementedError
 
-    def nlargest(self, name, n):
+    def nlargest(self, n, name):
+        """ Return the random variable of *n*'th largest outcome.
+        """
+        return nth_highest(n)(self, name)
+
+    def nlargest_sum(self, n, name):
         """ Return the random variable of the sum of the *n* largest outcomes.
         """
-        raise NotImplementedError
+        return keep_and_sum(n)(self, name)
 
     def nsmallest(self, name, n):
         """ Return the random variable of the sum of the *n* smallest outcomes.
