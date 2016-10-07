@@ -3,3 +3,6 @@
 
 ## Pypi dist
 dist
+
+## Vim
+*.swp
