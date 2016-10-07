@@ -36,3 +36,13 @@ def ndk(n, k, name=None):
 dp = dk(100)
 dp.name = 'd%'
 
+
+def custom_die(values, name):
+    """ Return the random variable representing rolling a single custom die,
+    whose values are *values*.  """
+    xs = list(values)
+    _name = name.format(values=values)
+    n = len(xs)
+    ps = [1./n] * n
+    return DRV(_name, xs=xs, ps=ps)
+
